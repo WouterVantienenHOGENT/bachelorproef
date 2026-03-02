@@ -7,45 +7,27 @@
 
 % Pas na deze inleidende paragraaf komt de eerste sectiehoofding.
 
-Dit hoofdstuk bevat je literatuurstudie. De inhoud gaat verder op de inleiding, maar zal het onderwerp van de bachelorproef *diepgaand* uitspitten. De bedoeling is dat de lezer na lezing van dit hoofdstuk helemaal op de hoogte is van de huidige stand van zaken (state-of-the-art) in het onderzoeksdomein. Iemand die niet vertrouwd is met het onderwerp, weet nu voldoende om de rest van het verhaal te kunnen volgen, zonder dat die er nog andere informatie moet over opzoeken \autocite{Pollefliet2011}.
+\subsection{De uitdagingen en gevaren van crowd control}
 
-Je verwijst bij elke bewering die je doet, vakterm die je introduceert, enz.\ naar je bronnen. In \LaTeX{} kan dat met het commando \texttt{$\backslash${textcite\{\}}} of \texttt{$\backslash${autocite\{\}}}. Als argument van het commando geef je de ``sleutel'' van een ``record'' in een bibliografische databank in het Bib\LaTeX{}-formaat (een tekstbestand). Als je expliciet naar de auteur verwijst in de zin (narratieve referentie), gebruik je \texttt{$\backslash${}textcite\{\}}. Soms is de auteursnaam niet expliciet een onderdeel van de zin, dan gebruik je \texttt{$\backslash${}autocite\{\}} (referentie tussen haakjes). Dit gebruik je bv.~bij een citaat, of om in het bijschrift van een overgenomen afbeelding, broncode, tabel, enz. te verwijzen naar de bron. In de volgende paragraaf een voorbeeld van elk.
+Grootschalige openluchtevenementen zoals de Gentse Feesten brengen aanzienlijke drukte met zich mee. Uit onderzoek van \textcite{Helbing2000} blijkt dat mensen in drukte onvoorspelbaar gedrag kunnen vertonen. Dit wordt bevestigd door \textcite{Zeitz2009}. Het voorspellen van menselijk gedrag in drukte is een serieuze uitdaging, omdat er veel factoren zijn die het gedrag kunnen beïnvloeden. 
+Het uitwisselen van informatie tussen organisatoren en verschillende hulpdiensten is cruciaal om snel en effectief de veiligheid van bezoekers te kunnen garanderen. Uit onderzoek van \textcite{Hutton2025} blijkt dat dit een nog altijd een grote uitdaging is. 
+Dit komt allemaal samen in gevaarlijke situaties dat al meerdere levens heeft gekost. Onderzoek van \textcite{Dickie1995} toont aan dat dit incorrect inschatten en plannen rond drukte leidt tot meerdere incidenten waarbij levens verloren zijn gegaan. Verder toont dit onderzoek aan dat communicatie tussen hulpdiensten noodzakelijk is om levens te redden.
+OOk recente incidenten zoals Astroworld in 2021 tonen aan dat dit nog steeds een actueel probleem is.
 
-\textcite{Knuth1998} schreef een van de standaardwerken over sorteer- en zoekalgoritmen. Experten zijn het erover eens dat cloud computing een interessante opportuniteit vormen, zowel voor gebruikers als voor dienstverleners op vlak van informatietechnologie~\autocite{Creeger2009}.
+\subsection{Een nood aan automatisatie}
 
-Let er ook op: het \texttt{cite}-commando voor de punt, dus binnen de zin. Je verwijst meteen naar een bron in de eerste zin die erop gebaseerd is, dus niet pas op het einde van een paragraaf.
+Om voorgaande risico's te vermijden, vertrouwen organisatoren en hulpdiensten nog vaak op handmatige tellingen en kennis van voorgaande edities. Deze traditionele methoden zijn vaak subjectief, reactief en hebben een grote vertraging tot het nemen van actie. Doordat mensen handmatig moeten tellen, en vervolgens dit allemaal moeten communiceren, is er een grote kans op fouten en vertragingen. 
+Er is duidelijk nood aan een automatisch systeem dat real-time een accurate inschatting kan maken van drukte. Binnen dit domein is er al veel onderzoek gedaan naar computervisie en deep learning technieken. Maar volgens \textcite{Khan2020} blijft het accuraat voorspellen van drukte in real-time, en zeker in ongewone situaties, een grote uitdaging. Bestaande computervisie-modellen zijn geoptimaliseerd voor het herkennen van objecten, en minden voor het voorspellen van drukte. Verder is er natuurlijk ook een gebrek aan data.
+Om deze specifieke uitdagingen aan te pakken, wijst een recent survey van \textcite{Gao2025} op het potentieel van density estimation modellen. Standaard object detection modellen zoals Convolutional Neural Networks (CNN's) zijn gericht op het detecteren en tellen van individuele personen, wat tot incorrecte voorspelling leidt in drukke omgevingen. Density estimation modellen analyseren de dichtheid van mensen in een bepaald gebied. Dit resulteert in een zogenaamde density map, wat een visuele representatie is van de dichtheid van mensen in een bepaald gebied. Deze aanpak is efficiënter, en kan beter overweg met variaties en ongewone situaties.
 
-\begin{figure}
-  \centering
-  \includegraphics[width=0.8\textwidth]{grail.jpg}
-  \caption[Voorbeeld figuur.]{\label{fig:grail}Voorbeeld van invoegen van een figuur. Zorg altijd voor een uitgebreid bijschrift dat de figuur volledig beschrijft zonder in de tekst te moeten gaan zoeken. Vergeet ook je bronvermelding niet!}
-\end{figure}
+\subsection{Density Estimation modellen}
+Zoals eerder vermeld, zijn density estimation modellen een veelbelovende aanpak voor druktecontrole en voorspellingen. In plaats van het tellen van individuele personen, analyseren deze modellen de dichtheid van mensen in een bepaald gebied. Hierdoor zijn de modellen in staat om een density map te maken.
+Er zijn 2 populaire modellen die deze aanpak gebruiken, namelijk CSRNet en MCNN. CRSNet, ontwikkeld door \textcite{Li2018}, maakt gebruik van een standaard CNN, en een dilated convolutional layers, wat de traditionele pooling layers vervangt. Hierdoor kan het model een betere resolutie behouden, en daardoor nauwkeurigere density maps genereren.
+MCNN, ontwikkeld door \textcite{Zhang2016}, maakt gebruik van meerdere parallele CNN's met verschillende filtergroottes. Hierdoor blinkt dit model uit in het omgaan met variaties in perspectief. Hierdoor kan het model beter omgaan met ongewone situaties. 
+Het uitwerken en implementeren van deze modellen, vormt de technische basis van de geplande PoC voor de Gentse Feesten. 
 
-\begin{listing}
-  \begin{minted}{python}
-    import pandas as pd
-    import seaborn as sns
+De ultieme uitdaging zal zijn om deze modellen te optimaliseren voor de Gentse Feesten, en te zorgen dat ze in real-time kunnen draaien. Een effectief systeem zal een balans moeten vinden tussen nauwkeurigheid, verwerkingssnelheid, en benodigde rekenkracht.
+Tot slot is het belangrijk om rekening te houden met de privacy van bezoekers. Het systeem zal moeten voldoen aan de GDPR-regelgeving. Dit zal gedaan worden door on-device verwerking, en geen opslag van beelden of persoonlijke gegevens. Ook zullen er technieken gebruikt worden om de beelden te anonimiseren, aangezien dit niet van belang is voor het tellen van mensen.
 
-    penguins = sns.load_dataset('penguins')
-    sns.relplot(data=penguins, x="flipper_length_mm", y="bill_length_mm", hue="species")
-  \end{minted}
-  \caption[Voorbeeld codefragment]{Voorbeeld van het invoegen van een codefragment.}
-\end{listing}
 
-\lipsum[7-20]
-
-\begin{table}
-  \centering
-  \begin{tabular}{lcr}
-    \toprule
-    \textbf{Kolom 1} & \textbf{Kolom 2} & \textbf{Kolom 3} \\
-    $\alpha$         & $\beta$          & $\gamma$         \\
-    \midrule
-    A                & 10.230           & a                \\
-    B                & 45.678           & b                \\
-    C                & 99.987           & c                \\
-    \bottomrule
-  \end{tabular}
-  \caption[Voorbeeld tabel]{\label{tab:example}Voorbeeld van een tabel.}
-\end{table}
 
