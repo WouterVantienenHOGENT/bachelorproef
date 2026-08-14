@@ -1,0 +1,8 @@
+# Exact environment used for the final experiments on the RTX 3050 Ti laptop.
+--extra-index-url https://download.pytorch.org/whl/cu130
+torch==2.13.0+cu130
+torchvision==0.28.0+cu130
+numpy==2.5.1
+Pillow==12.3.0
+matplotlib==3.11.1
+scipy==1.18.0
