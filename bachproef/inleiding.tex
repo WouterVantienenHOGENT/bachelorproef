@@ -5,48 +5,48 @@
 \chapter{\IfLanguageName{dutch}{Inleiding}{Introduction}}%
 \label{ch:inleiding}
 
-Openluchtevenementen lokken jaarlijks honderdduizenden bezoekers naar 1 locatie. Dit veroorzaakt enorme drukte, wat voor uitdagingen zorgt op het vlak van veiligheid voor bezoekers. Incidenten uit het verleden uit andere landen leren dat het incorrect inschatten van deze drukte kan leiden tot levensgevaarlijke situaties zoals verdrukking en paniek. In dit onderzoek richten we ons op de organisatoren van de Gentse Feesten, en op de hulpdiensten die aanwezig zijn tijdens deze feesten. Het resultaat is een Proof of Concept (PoC) dat automatisch waarschuwingen kan uisturen bij kritieke dichtheden, waardoor hulpdiensten proactief kunnen ingrijpen, en zo de veiligheid van bezoekers kunnen verbeteren.
+Tijdens de Gentse Feesten verplaatsen grote groepen bezoekers zich voortdurend tussen pleinen, straten en podia. De drukte is daardoor niet gelijkmatig over de binnenstad verdeeld: een locatie kan in korte tijd vollopen, terwijl het elders relatief rustig blijft. Voor hulpdiensten is het daarom niet alleen relevant hoeveel bezoekers op het evenement aanwezig zijn, maar vooral waar de drukte toeneemt, hoe snel dat gebeurt en welke doorgangen daarbij onder druk komen te staan. Recente veiligheidsmaatregelen, zoals het spreiden van de uitstroom na een bijzonder drukke feestendag, illustreren de nood aan een actueel beeld van bezoekersstromen \autocite{Aneca2024}.
+
+Camera's kunnen lokale veranderingen continu zichtbaar maken, maar het gelijktijdig beoordelen van meerdere videobeelden blijft arbeidsintensief. Computervisie biedt een manier om die beelden automatisch te analyseren. In zeer drukke scènes is het vaak moeilijk om elke persoon afzonderlijk te detecteren, bijvoorbeeld door overlap, perspectiefverschillen en wisselende belichting. Daarom onderzoekt deze bachelorproef \emph{density estimation}: een techniek die een dichtheidskaart voorspelt waarvan de som een schatting geeft van het aantal personen in beeld \autocite{Khan2020}. Zo'n kaart kan drukke zones zichtbaar maken en hulpdiensten van aanvullende, objectieve informatie voorzien.
 
 \section{\IfLanguageName{dutch}{Probleemstelling}{Problem Statement}}%
 \label{sec:probleemstelling}
 
-Uit onderzoek blijkt dat er nood is aan een geautomatiseerd systeem dat real-time drukte kan voorspellen en visualiseren, zodat organisatoren en hulpdiensten sneller en efficiënter kunnen omgaan met mogelijke risicozones. De bestaande methoden voor druktecontrole zijn vaak gebaseerd op handmatige tellingen en kennis van voorgaande evenementen, wat kan leiden tot subjectieve en reactieve beslissingen. Een geautomatiseerd systeem kan in real-time een accurate inschatting maken van drukte, kan waarschuwingen genereren bij kritieke dichtheden, en dan proactief hulpdiensten waarschuwen, wat de veiligheid van bezoekers kan verbeteren. Openluchtevenementen zoals de Gentse Feesten brengen aanzienlijke drukte met zich mee, wat voor uitdagingen zorgt op het vlak van veiligheid. Incidenten uit het verleden uit andere landen leren dat het niet correct inschatten van drukte kan leiden tot levensgevaarlijke situaties. 
+De Gentse Feesten vinden sinds 1843 plaats en groeiden uit tot een tiendaags cultureel volksfeest in de historische binnenstad. In 2023 werden meer dan 1,6 miljoen bezoekers geteld, verspreid over dag en nacht \autocite{StadGentGeschiedenis}. Omdat het evenement niet op één afgesloten terrein plaatsvindt, verplaatsen bezoekers zich vrij tussen locaties. Een algemeen bezoekersaantal zegt daardoor weinig over lokale drukte of mogelijke knelpunten.
+
+Een hoge personendichtheid kan de bewegingsvrijheid beperken en het risico op gevaarlijke situaties verhogen. Organisatoren en hulpdiensten baseren zich daarvoor onder meer op terreinobservaties, handmatige tellingen en ervaring uit voorgaande edities. Die werkwijze blijft onmisbaar, maar kan niet gelijktijdig elke locatie opvolgen en leidt onvermijdelijk tot een vertraging tussen waarnemen, afstemmen en handelen.
+
+Stad Gent experimenteerde reeds met meerdere vormen van druktemeting. Het project VLOED wijst op de nood aan fijnmazige, actuele informatie over de ruimtelijke spreiding van drukte \autocite{StadGentVloed}. Er is echter een bijkomende vertaalslag nodig om camerabeelden om te zetten in informatie die operationeel bruikbaar is. Dit onderzoek verkent in welke mate een density-estimationmodel daarvoor een technische basis kan vormen.
 
 \section{\IfLanguageName{dutch}{Onderzoeksvraag}{Research question}}%
 \label{sec:onderzoeksvraag}
 
-Hoe kan computervisie ingezet worden om real-time druk\-te\-con\-tro\-le te realiseren tijdens openluchtevenementen zoals de Gentse Feesten?
+Hoe kan computervisie, meer bepaald density estimation, bruikbare en tijdige indicaties van lokale drukte leveren tijdens openluchtevenementen zoals de Gentse Feesten?
 
 \textit{Deelvragen rond het probleemdomein:}
 \begin{itemize}
-    \item Welke factoren bepalen een gevaarlijke per\-so\-nen\-dicht\-heid, en hoe kunnen deze dienen als drempelwaarden voor waarschuwingen?
-    \item Welke bestaande methoden voor druktecontrole zijn er, en wat zijn hun beperkingen?
+    \item Welke factoren maken lokale drukte risicovol, en welke informatie hebben hulpdiensten nodig om proactief te kunnen ingrijpen?
+    \item Welke bestaande technieken voor druktemeting zijn beschikbaar en welke beperkingen hebben ze voor een verspreid stadsfestival?
 \end{itemize}
 
 \textit{Deelvragen rond het oplossingsdomein:}
 \begin{itemize}
-    \item Welke computervisie- en deep learning-tech\-nie\-ken zijn het meest geschikt voor real-time druktecontrole?
-    \item Welke datasets zijn beschikbaar voor het trainen en testen van computervisie-modellen gericht op druktecontrole?
+    \item Waarom is density estimation een geschikte aanvulling op persoonsdetectie in dicht bezette scènes?
+    \item Welke dataset, evaluatiemetrieken en experimentele opzet zijn nodig om een eerste model reproduceerbaar te beoordelen?
+    \item Welke nauwkeurigheid en inferentiesnelheid bereikt een CSRNet-baseline op ShanghaiTech Part B?
+    \item Welke bijkomende kalibratie is nodig om een dichtheidskaart in beeldcoördinaten te vertalen naar een fysieke dichtheid in personen per vierkante meter?
 \end{itemize}
 
 \section{\IfLanguageName{dutch}{Onderzoeksdoelstelling}{Research objective}}%
 \label{sec:onderzoeksdoelstelling}
 
-Het doel van dit onderzoek is het ontwikkelen van een Proof of Concept (PoC). Dit systeem zal beelden van bestaande camera's analyseren, en omzetten naar een Density Map. Het eindresultaat zal een systeem zijn dat automatisch waarschuwingen genereert bij kritieke dichtheden, waardoor hulpdiensten proactief kunnen omgaan met mogelijke risico's. Hierdoor wordt de veiligheid van bezoekers verbeterd, en kunnen levensgevaarlijke situaties voorkomen worden.
+Het doel van dit onderzoek is een reproduceerbare Proof of Concept (PoC) te realiseren die met CSRNet een density map en een geschat aantal personen uit één camerabeeld afleidt. De PoC wordt geëvalueerd op ShanghaiTech Part B aan de hand van de Mean Absolute Error (MAE), de Root Mean Squared Error (RMSE) en de gemeten inferentietijd. De resultaten tonen welke prestaties een eerste baseline haalt en welke stappen nog nodig zijn voor inzet in de context van de Gentse Feesten.
+
+De PoC is beslissingsondersteunend: zij kan een operator attenderen op relatieve veranderingen of drukke zones, maar vervangt geen menselijke beoordeling. De dichtheidskaart drukt in de huidige opzet een verdeling in beeldpixels uit. Ze kan dus niet zonder camerakalibratie worden geïnterpreteerd als een fysieke dichtheid in personen per vierkante meter, en vormt op zichzelf geen grond voor een veiligheidsalarm. Het onderzoek richt zich evenmin op het herkennen of volgen van individuele bezoekers.
 
 \section{\IfLanguageName{dutch}{Opzet van deze bachelorproef}{Structure of this bachelor thesis}}%
 \label{sec:opzet-bachelorproef}
 
-% Het is gebruikelijk aan het einde van de inleiding een overzicht te
-% geven van de opbouw van de rest van de tekst. Deze sectie bevat al een aanzet
-% die je kan aanvullen/aanpassen in functie van je eigen tekst.
+Hoofdstuk~\ref{ch:stand-van-zaken} situeert de Gentse Feesten als casus, bespreekt risico's en bestaande technieken voor druktemeting en motiveert de keuze voor density estimation. Hoofdstuk~\ref{ch:methodologie} beschrijft de onderzoeksmethode, de datasetsplitsing en het evaluatieprotocol.
 
-De rest van deze bachelorproef is als volgt opgebouwd:
-
-In Hoofdstuk~\ref{ch:stand-van-zaken} wordt een overzicht gegeven van de stand van zaken binnen het onderzoeksdomein, op basis van een literatuurstudie.
-
-In Hoofdstuk~\ref{ch:methodologie} wordt de methodologie toegelicht en worden de gebruikte onderzoekstechnieken besproken om een antwoord te kunnen formuleren op de onderzoeksvragen.
-
-% TODO: Vul hier aan voor je eigen hoofstukken, één of twee zinnen per hoofdstuk
-
-In Hoofdstuk~\ref{ch:conclusie}, tenslotte, wordt de conclusie gegeven en een antwoord geformuleerd op de onderzoeksvragen. Daarbij wordt ook een aanzet gegeven voor toekomstig onderzoek binnen dit domein.
+Hoofdstuk~\ref{ch:poc} licht de implementatie van CSRNet toe en rapporteert de resultaten van de uitgevoerde CPU- en GPU-experimenten. Ten slotte beantwoordt Hoofdstuk~\ref{ch:conclusie} de onderzoeksvraag, plaatst het de resultaten in hun context en formuleert het aanbevelingen voor verder onderzoek en eventuele operationele inzet.

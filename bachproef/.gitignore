@@ -1,0 +1,11 @@
+# Downloaded datasets, generated density maps, and large model artefacts
+/data/
+/.venv/
+__pycache__/
+*.py[cod]
+
+# Keep the small JSON/CSV experiment logs, but not the large checkpoints.
+/runs/**/*.pt
+/runs/**/*.pth
+/runs/**/*.pt.tmp
+/runs/**/*.pth.tmp

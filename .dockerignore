@@ -1,0 +1,7 @@
+.git
+output
+bachproef/data
+bachproef/runs
+bachproef/.venv
+**/__pycache__
+**/*.pyc

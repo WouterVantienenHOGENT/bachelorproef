@@ -1,0 +1,257 @@
+%%=============================================================================
+%% Proof of Concept: technische uitwerking
+%%=============================================================================
+
+\chapter{Proof of Concept: CSRNet-training}
+\label{ch:poc}
+
+Dit hoofdstuk beschrijft de technische uitwerking van de Proof of Concept, twee kalibratie-experimenten en een finale trainingsrun met ShanghaiTech Part B. Het doel is niet om definitieve prestaties voor de Gentse Feesten te claimen, maar om een reproduceerbare keten van ruwe annotaties tot training, full-image-evaluatie en inferentie te realiseren. De implementatie bestaat uit een voorbereidingsscript, een datasetmodule, de CSRNet-architectuur, een trainingsscript, een afzonderlijke evaluator en scripts voor inferentie, vergelijking en visualisatie van runs.
+
+\section{Opzet van de trainingspipeline}
+
+De implementatie is geschreven in Python met PyTorch. Deze keuze sluit goed aan bij CSRNet: PyTorch maakt het mogelijk om een bestaand convolutioneel netwerk te hergebruiken, de fout tijdens het trainen automatisch te differentiëren en de berekeningen indien beschikbaar op een GPU uit te voeren. De broncode is bewust opgesplitst in kleine onderdelen. Het bestand \texttt{csrnet.py} bevat uitsluitend het model, \texttt{data.py} behandelt de beeld- en annotatiegegevens, \texttt{train.py} stuurt de trainingslus aan en \texttt{infer.py} maakt voorspellingen voor afzonderlijke camerabeelden.
+
+De invoerdata worden per split in twee parallelle mappen bewaard: één voor de beelden en één voor de bijbehorende density maps. Voor een bestand \texttt{images/scene/a.jpg} verwacht de loader bijvoorbeeld \texttt{density\_maps/scene/a.npy}. Dit NumPy-bestand bevat een tweedimensionale matrix met dezelfde afmetingen als het oorspronkelijke beeld. De som van alle waarden in die matrix komt overeen met het aantal geannoteerde personen. Het voorbereidingsscript zet de puntannotaties van ShanghaiTech om naar dit formaat en controleert automatisch of de som behouden blijft.
+
+\section{Experimentele omgeving en reproduceerbaarheid}
+
+Tabel~\ref{tab:experimentele-omgeving} beschrijft de lokale omgeving die voor de GPU-kalibratie is gebruikt en voor de finale trainingsruns is vastgelegd. De exacte directe Pythonafhankelijkheden staan bovendien met versienummer in \texttt{requirements-final.txt}. Daardoor kan de softwareomgeving later opnieuw worden opgebouwd zonder stilzwijgend nieuwere pakketversies te gebruiken. Bijlage~\ref{app:broncode} bevat de volledige Pythonbroncode, de regressietests en de pakketversies voor de laptop en Raspberry Pi.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{>{\raggedright\arraybackslash}p{3.8cm}p{8.7cm}}
+        \toprule
+        \textbf{Onderdeel} & \textbf{Configuratie} \\
+        \midrule
+        Besturingssysteem & CachyOS Linux, kernel 7.0.9, 64-bit \\
+        Processor en geheugen & Intel Core i7-12700H, 14 fysieke kernen en 20 logische processoren; 16 GB RAM \\
+        GPU & NVIDIA GeForce RTX 3050 Ti Laptop GPU met 4 GB VRAM; driver 595.71.05 \\
+        Pythonomgeving & Python 3.12.11 \\
+        Deep-learningstack & PyTorch 2.13.0 met CUDA 13.0; torchvision 0.28.0; cuDNN 9.2 \\
+        Overige pakketten & NumPy 2.5.1; SciPy 1.18.0; Pillow 12.3.0; Matplotlib 3.11.1 \\
+        \bottomrule
+    \end{tabular}
+    \caption[Experimentele hardware- en softwareomgeving]{Hardware- en softwareomgeving voor de GPU-experimenten.}
+    \label{tab:experimentele-omgeving}
+\end{table}
+
+Het voorbereidingsscript schrijft naast de beelden en density maps een datasetmanifest met de bestandsnamen per split, de splitseed en de standaardafwijking van de Gaussische kernel. Bij de start van een run neemt het trainingsscript ook de SHA-256-hash van dat manifest op. Elke nieuwe run krijgt een afzonderlijke uitvoermap met de argumenten en omgevingsinformatie in \texttt{config.json}, de metrieken van iedere epoch in \texttt{metrics.csv} en een samenvatting in \texttt{summary.json}. Voor de finale runs wordt seed 42 gecombineerd met de optie voor deterministische PyTorch-algoritmen.
+
+De checkpointstrategie bewaart na iedere epoch \texttt{last.pt}, bij een verbetering van de validatie-MAE \texttt{best.pt} en standaard om de 25 epochs een genummerd tussentijds checkpoint. Naast de modelgewichten bevatten deze bestanden de toestand van de optimizer, de mixed-precisionscaler en de toevalsgetallengeneratoren. Een onderbroken run kan daardoor vanuit \texttt{last.pt} worden voortgezet terwijl het opgegeven aantal epochs het totale trainingsdoel blijft. Een regressiecontrole met een korte trainingsrun bevestigde dat onderbreken en hervatten dezelfde modelgewichten en metrieken oplevert als een ononderbroken uitvoering.
+
+\section{Voorbereiding van beelden en density maps}
+
+Tijdens de training wordt uit elk beeld een uitsnede met een vaste grootte genomen. Dit houdt het geheugengebruik beheersbaar en maakt batches mogelijk. Kleine beelden worden vooraf proportioneel vergroot; grotere beelden leveren een willekeurige uitsnede. Alle gebruikte beelden van ShanghaiTech Part B zijn \(1024 \times 768\) pixels. Een trainingsuitsnede van \(512 \times 512\) pixels beslaat dus de helft van de beeldbreedte en twee derde van de beeldhoogte, zonder dat het oorspronkelijke beeld wordt herschaald. De eerste volledige technische run gebruikt uitsneden van \(256 \times 256\) pixels, omdat op de beschikbare CPU eerst de volledige keten en de benodigde rekentijd wordt onderzocht. Voor de GPU-runs is \(512 \times 512\) gekozen als praktisch compromis. De uitsnede bevat viermaal zoveel pixels en meer ruimtelijke context dan een uitsnede van \(256 \times 256\), terwijl een batch van vier op de beschikbare GPU met 4~GB VRAM past. Tijdens de finale run bedroeg het maximale door PyTorch toegewezen GPU-geheugen \(1155{,}6\)~MiB. Deze keuze is niet als optimale cropgrootte vastgesteld, omdat geen gecontroleerde vergelijking van meerdere cropgroottes is uitgevoerd. De RGB-waarden worden genormaliseerd met dezelfde gemiddelde waarden en standaardafwijkingen als de ImageNet-voortraining van VGG-16.
+
+De validatie gebruikt geen uitsneden. Elk volledig validatiebeeld wordt verwerkt met batchgrootte één. Dit is belangrijk omdat een MAE op een centrale uitsnede niet vergelijkbaar is met de fout op de totale telling van een ShanghaiTech-beeld. Als een beeldafmeting niet deelbaar is door acht, vult de loader de rechter- en onderrand met nullen aan tot het volgende veelvoud van acht. In tegenstelling tot afsnijden blijven zo ook annotaties aan de beeldrand behouden. Voor de hier gebruikte beelden met \(1024 \times 768\) pixels heeft die stap geen effect.
+
+CSRNet verkleint de ruimtelijke resolutie van de invoer met een factor acht. Daarom wordt ook de doelmap naar een achtmaal kleinere resolutie geschaald. Bij een trainingsuitsnede van \(512 \times 512\) pixels is de doelmap \(64 \times 64\) pixels. De cropgrootte moet daarom deelbaar zijn door acht. Een gewone resize zou echter de personentelling veranderen: een density map is geen gewone afbeelding, maar een verdeling waarvan de integraal betekenis heeft. Listing~\ref{lst:resize-density} toont daarom dat de som na interpolatie expliciet wordt hersteld. Op die manier blijft een doelmap met bijvoorbeeld 37 personen ook na het downsamplen een som van 37 behouden.
+
+\begin{listing}[htbp]
+\begin{minted}[fontsize=\small]{python}
+def resize_density_map(density, size):
+    original_sum = density.sum()
+    resized = F.interpolate(
+        density[None, None], size=size, mode="area"
+    )[0, 0]
+    return resized * (original_sum / resized.sum().clamp_min(1e-12))
+\end{minted}
+\caption{Density map schalen met behoud van de totale telling.}
+\label{lst:resize-density}
+\end{listing}
+
+Deze aanpak is geschikt voor een eerste baseline. Bij latere experimenten kunnen bijkomende augmentaties, zoals horizontaal spiegelen, subtiele kleurvariaties of perspectiefspecifieke crops, worden toegevoegd. Zulke bewerkingen moeten steeds zowel op het beeld als op de density map correct worden toegepast.
+
+\section{Model en fine-tuning}
+
+De gebruikte CSRNet bestaat uit twee delen. De frontend neemt de eerste lagen van VGG-16 over en haalt lokale visuele kenmerken uit het beeld. Voor deze frontend worden ImageNet-gewichten gebruikt als startpunt. Dit is nuttig wanneer de eigen crowd dataset beperkt is, omdat de eerste lagen dan al algemene patronen zoals randen, vormen en texturen herkennen. De backend bestaat uit convolutielagen met dilatie twee. Daardoor groeit het receptieve veld zonder dat extra poolinglagen de density map verder verkleinen. Een laatste \(1 \times 1\)-convolutie zet de kenmerken om naar één kanaal: de voorspelde density map.
+
+Listing~\ref{lst:csrnet-forward} vat de kern van de voorwaartse berekening samen. De volledige architectuur is volledig convolutioneel; ze kan dus ook beelden met andere afmetingen verwerken, zolang de afmetingen voor de interne stride correct worden opgevangen.
+
+\begin{listing}[htbp]
+\begin{minted}[fontsize=\small]{python}
+class CSRNet(nn.Module):
+    def __init__(self, pretrained_frontend=True):
+        vgg_features = vgg16(weights=weights).features
+        self.frontend = nn.Sequential(*list(vgg_features.children())[:23])
+        self.backend = self._make_backend(
+            [512, 512, 512, 256, 128, 64], in_channels=512
+        )
+        self.output_layer = nn.Conv2d(64, 1, kernel_size=1)
+
+    def forward(self, image):
+        return self.output_layer(self.backend(self.frontend(image)))
+\end{minted}
+\caption{Vereenvoudigde opbouw en voorwaartse berekening van CSRNet.}
+\label{lst:csrnet-forward}
+\end{listing}
+
+De implementatie minimaliseert de som van de gekwadrateerde afwijkingen tussen de voorspelde en de doel-density map, gedeeld door de batchgrootte. Dit is verwant aan MSE, maar geen gemiddelde over alle pixels: bij grotere doelmaps kan de absolute trainingsloss dus groter zijn. De loss dient uitsluitend om de training te sturen; de rapporteerbare prestaties worden beoordeeld met MAE en RMSE op volledige beelden. Het model leert zo niet alleen het uiteindelijke aantal personen, maar ook waar in het beeld de dichtheid zich bevindt. Adam wordt als optimizer gebruikt met een lage initiële leersnelheid, omdat een reeds voorgetrainde frontend wordt verfijnd in plaats van vanaf nul getraind.
+
+\begin{listing}[htbp]
+\begin{minted}[fontsize=\small]{python}
+with torch.autocast(device_type=device.type, enabled=device.type == "cuda"):
+    prediction = model(images.to(device))
+    loss = criterion(prediction, targets.to(device)) / images.shape[0]
+
+scaler.scale(loss).backward()
+scaler.step(optimizer)
+scaler.update()
+\end{minted}
+\caption{Eén trainingsstap met optionele mixed-precision op een GPU.}
+\label{lst:training-step}
+\end{listing}
+
+De standaardinstellingen van het trainingsscript --- onder meer 100 epochs, een batchgrootte van vier en een leersnelheid van \(10^{-5}\) --- zijn startwaarden en geen definitieve hyperparameters. De beschikbare geheugencapaciteit en de eigenschappen van de dataset bepalen welke waarden haalbaar en wenselijk zijn. Om een eerlijke vergelijking te maken, worden de instellingen en de gebruikte datasetversie per experiment geregistreerd.
+
+\section{Evaluatie en uitvoer}
+
+Na iedere epoch wordt de validatieset geëvalueerd. Voor elk beeld wordt de som van de voorspelde density map vergeleken met de som van de doelmap. De Mean Absolute Error (MAE) drukt de gemiddelde absolute afwijking in aantal personen uit. De Root Mean Squared Error (RMSE) geeft grotere fouten relatief meer gewicht. De trainingssamenvatting bewaart voor de beste epoch de volledige metriekrij, zodat bijvoorbeeld de RMSE en rekentijd niet per ongeluk van een andere epoch worden overgenomen. Naast deze kwantitatieve metrieken worden de maps visueel gecontroleerd: hoge waarden moeten in de geannoteerde drukke zones liggen en niet op irrelevante achtergrondgebieden.
+
+Het afzonderlijke evaluatiescript verwerkt een gekozen checkpoint op volledige beelden en schrijft voor ieder beeld de werkelijke telling, voorspelling, absolute fout en modeltijd naar \texttt{predictions.csv}. De bijbehorende \texttt{summary.json} bevat naast MAE en RMSE ook de gemiddelde getekende fout of bias, de mediaan en het 95e percentiel van de absolute fout, de grootste fout en samenvattende timinggegevens. Het script duidt bovendien voorbeelden met een lage, mediane en hoge absolute fout aan. De scripts \texttt{plot\_metrics.py} en \texttt{plot\_evaluation.py} zetten respectievelijk het verloop van trainingsloss, MAE en RMSE en de verdeling van de voorspelfouten om in figuren. De officiële testset wordt pas na de modelselectie met het vooraf gekozen beste checkpoint geëvalueerd.
+
+Voor gebruik buiten de trainingslus laadt \texttt{infer.py} het beste checkpoint en verwerkt het één beeld. Het script bewaart twee resultaten: een \texttt{.npy}-bestand met de numerieke density map voor verdere verwerking en een PNG-heatmap voor visuele controle. De som van de numerieke map wordt in de terminal als geschat aantal personen getoond. De PNG is dus een hulpmiddel voor de gebruiker; berekeningen moeten steeds op de numerieke map of op de daaruit afgeleide telling steunen. Zonder camerakalibratie mag die telling niet worden vertaald naar personen per vierkante meter of naar een automatische veiligheidsdrempel.
+
+\section{Experimenten met ShanghaiTech Part B}
+
+\subsection{Technische kalibratieruns}
+
+Voor beide runs wordt ShanghaiTech Part B gebruikt. Van de 400 officiële trainingsbeelden worden 360 beelden voor training en 40 beelden voor validatie gebruikt. De selectie gebeurt deterministisch met seed 42. De 316 officiële testbeelden worden niet gebruikt voor modelselectie of voor de rapportering van MAE en RMSE. Zo beïnvloeden keuzes over onder meer cropgrootte, batchgrootte en leersnelheid de testset niet.
+
+Tabel~\ref{tab:eerste-csrnet-run} geeft de configuratie van de eerste CPU-run weer. Op dat systeem was geen CUDA-GPU actief. Daarom is gekozen voor één epoch en een batchgrootte van één. De frontend gebruikt wel de voorgetrainde ImageNet-gewichten van VGG-16. Deze run controleert de volledige technische keten en geeft een eerste inschatting van de benodigde rekentijd.
+
+\begin{table}[htbp]
+    \centering
+    \begin{tabular}{ll}
+        \toprule
+        Instelling & Waarde \\
+        \midrule
+        Dataset & ShanghaiTech Part B \\
+        Trainings-/validatiebeelden & 360 / 40 \\
+        Testbeelden gebruikt & 0 van 316 \\
+        Model & CSRNet met voorgetrainde VGG-16-frontend \\
+        Epochs & 1 \\
+        Batchgrootte & 1 \\
+        Cropgrootte tijdens training & \(256 \times 256\) pixels \\
+        Validatie-invoer & Volledige beelden \\
+        Leersnelheid & \(10^{-5}\) \\
+        Optimizer & Adam \\
+        Hardware & CPU, zonder CUDA \\
+        \bottomrule
+    \end{tabular}
+\caption[Configuratie van de eerste CSRNet-run]{Configuratie van de eerste CPU-run op ShanghaiTech Part B.}
+    \label{tab:eerste-csrnet-run}
+\end{table}
+
+Na één epoch bedraagt de trainingsloss \(1{,}8984\). Op de 40 volledige validatiebeelden wordt een MAE van \(76{,}498\) personen en een RMSE van \(83{,}207\) personen gemeten. De volledige epoch, inclusief validatie, duurt op de gebruikte CPU ongeveer dertien minuten. Beide checkpoints --- het meest recente model en het model met de laagste validatie-MAE --- worden correct opgeslagen.
+
+Daarna is een tweede kalibratierun uitgevoerd op een NVIDIA GeForce RTX 3050 Ti Laptop GPU met een batchgrootte van vier en trainingsuitsneden van \(512 \times 512\) pixels. Deze run gebruikt dezelfde dataset en validatieset, maar is geen zuivere vergelijking met de CPU-run: zowel hardware als batch- en cropgrootte verschillen. Tabel~\ref{tab:kalibratieruns} rapporteert de resultaten daarom als twee afzonderlijke technische kalibraties, niet als een effectmeting van de GPU of van de grotere cropgrootte.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrr}
+        \toprule
+        & \textbf{CPU-run} & \textbf{GPU-kalibratierun} \\
+        \midrule
+        Epochs & 1 & 1 \\
+        Batchgrootte & 1 & 4 \\
+        Cropgrootte & \(256 \times 256\) & \(512 \times 512\) \\
+        Validatie-MAE & \(76{,}498\) & \(30{,}642\) \\
+        Validatie-RMSE & \(83{,}207\) & \(34{,}514\) \\
+        Duur epoch inclusief validatie & ca. 780 s & \(28{,}25\) s \\
+        Gemiddelde model-inferentie & \(7927{,}87\) ms & \(110{,}01\) ms \\
+        Theoretische modeldoorvoer & \(0{,}126\) FPS & \(9{,}090\) FPS \\
+        \bottomrule
+    \end{tabular}
+    \caption[Resultaten van de kalibratieruns]{Resultaten op dezelfde vaste validatieset. De runs verschillen in hardware, batchgrootte en cropgrootte; de verschillen in MAE en RMSE kunnen dus niet aan één factor worden toegeschreven.}
+    \label{tab:kalibratieruns}
+\end{table}
+
+Op de GPU duurt de gemeten model-inferentie voor een volledig beeld van \(1024 \times 768\) pixels gemiddeld ongeveer \(110\) ms, of theoretisch ongeveer 9,1 model-doorlopen per seconde. De meting gebruikt een opwarmfase en twintig gemeten doorlopen, met CUDA-synchronisatie vóór en na elke doorloop. Zij omvat alleen de voorwaartse berekening van het model; het laden, normaliseren, visualiseren en doorsturen van videobeelden zijn niet inbegrepen. De PoC onderbouwt daarom geen eis van 15 beelden per seconde en evenmin real-timewerking van de volledige verwerkingsketen.
+
+Figuur~\ref{fig:eerste-density-map} toont een kwalitatief voorbeeld op een beeld uit de officiële ShanghaiTech-testset \parencite{Zhang2016}. Het originele beeld bevat 195 geannoteerde personen. Na één epoch schat het CPU-model de telling op 265,1 personen. De heldere zones tonen waar de density map lokaal hogere waarden bevat. De kleuren van de doelmap en voorspelling worden voor de visualisatie afzonderlijk geschaald; de numerieke telling wordt daarom steeds berekend als de som van de onderliggende density map en niet uit de kleurintensiteit van de PNG. Dit testbeeld wordt uitsluitend geïllustreerd: er worden geen metrieken op gerapporteerd en het is niet gebruikt om hyperparameters te kiezen.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=\textwidth]{shanghaitech-density-map-vergelijking.png}
+    \caption[Eerste density-mapvoorspelling]{Vergelijking tussen een origineel testbeeld, de density map op basis van de annotaties en de voorspelling van CSRNet na één epoch. De voorspelling lokaliseert een groot deel van de drukke zones, maar overschat de totale telling nog.}
+    \label{fig:eerste-density-map}
+\end{figure}
+
+Deze meetwaarden zijn geen eindresultaat. Eén epoch is onvoldoende om CSRNet volledig te verfijnen, en de twee kalibratieruns verschillen in meer dan één instelling. Zij tonen wel aan dat de volledige keten werkt: ruwe puntannotaties worden omgezet naar density maps, de telling blijft behouden bij het schalen, het model kan worden getraind en de fout wordt op volledige beelden berekend. Een eerdere technische controle op centrale validatiecrops leverde een veel lagere fout op, maar bleek niet representatief voor de totale beeldtelling. Daarom wordt uitsluitend full-image-evaluatie behouden.
+
+\subsection{Finale trainingsrun}
+
+Na de kalibratie is CSRNet gedurende 100 epochs getraind volgens het vooraf vastgelegde protocol. De run gebruikt dezelfde 360 trainingsbeelden, 40 validatiebeelden, seed 42, cropgrootte van \(512 \times 512\) pixels, batchgrootte vier en leersnelheid \(10^{-5}\) als de gecontroleerde GPU-run van één epoch. Beide runs gebruiken dezelfde finale code en deterministische PyTorch-algoritmen. Ze registreren ook dezelfde hash van het datasetmanifest. Daardoor kan het verschil in tabel~\ref{tab:een-versus-honderd-epochs} als het effect van verdere training binnen deze ene configuratie worden gelezen. De officiële testset is niet voor deze vergelijking gebruikt.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{lrr}
+        \toprule
+        & \textbf{1 epoch} & \textbf{100 epochs} \\
+        \midrule
+        Geselecteerd checkpoint & epoch 1 & epoch 39 \\
+        Trainingsloss geselecteerde epoch & \(7{,}1764\) & \(2{,}9051\) \\
+        Validatie-MAE & \(27{,}946\) & \(6{,}556\) \\
+        Validatie-RMSE & \(40{,}757\) & \(9{,}218\) \\
+        Mediane absolute fout & \(20{,}134\) & \(3{,}789\) \\
+        Gemiddelde getekende fout & \(-26{,}796\) & \(-0{,}304\) \\
+        Gemiddelde model-inferentie & \(106{,}88\) ms & \(107{,}02\) ms \\
+        Theoretische modeldoorvoer & \(9{,}356\) FPS & \(9{,}344\) FPS \\
+        Totale duur van de run & ca. 27 s & \(58{,}19\) min \\
+        \bottomrule
+    \end{tabular}
+    \caption[Vergelijking tussen één en 100 epochs]{Vergelijking op dezelfde vaste validatieset met dezelfde finale code en configuratie. Voor de run van 100 epochs wordt het vooraf geselecteerde checkpoint met de laagste validatie-MAE gerapporteerd.}
+    \label{tab:een-versus-honderd-epochs}
+\end{table}
+
+De laagste validatie-MAE wordt bereikt op epoch 39. Tegenover de gecontroleerde run van één epoch daalt de MAE met \(76{,}5\%\) en de RMSE met \(77{,}4\%\). De gemiddelde getekende fout of bias verandert van een onderschatting met \(26{,}796\) personen naar een bijna neutrale waarde van \(-0{,}304\) personen. De gemiddelde modeltijd blijft vrijwel gelijk, zoals verwacht: het aantal getrainde epochs verandert de gewichten, maar niet de CSRNet-architectuur of het aantal bewerkingen tijdens een voorwaartse berekening. Op het beste checkpoint bedraagt de mediaan van de absolute fout \(3{,}789\) personen, het 95e percentiel \(18{,}232\) personen en de grootste absolute fout \(27{,}569\) personen.
+
+\subsection{Inferentie op laptop en Raspberry Pi}
+
+Naast de evaluatie op de laptop-GPU is dezelfde CSRNet-architectuur uitgevoerd op de Intel Core i7-12700H van de laptop en op een Raspberry Pi 5 Model B met 4 GB RAM. Voor de platformvergelijking verwerken alle systemen twintigmaal hetzelfde testbeeld van \(1024 \times 768\) pixels na drie opwarmruns. De CPU-metingen gebruiken het geselecteerde checkpoint van epoch 39. De beschikbare GPU-meting met dit exacte herhaalprotocol gebruikt het kalibratiecheckpoint van epoch 1. Dat checkpoint heeft andere gewichten, maar dezelfde architectuur, invoergrootte en hoeveelheid rekenwerk. De afzonderlijke evaluatie van het finale GPU-checkpoint over veertig validatiebeelden levert met \(107{,}02\) ms en \(9{,}344\) FPS vrijwel dezelfde doorvoer op.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{>{\raggedright\arraybackslash}p{3.1cm}rrrr}
+        \toprule
+        \textbf{Platform} & \textbf{Epoch} & \textbf{ms/beeld} & \textbf{FPS} & \textbf{Relatief t.o.v. Pi} \\
+        \midrule
+        RTX 3050 Ti laptop-GPU & 1 & \(109{,}16\) & \(9{,}161\) & \(100{,}3\times\) \\
+        Core i7-12700H laptop-CPU & 39 & \(5267{,}09\) & \(0{,}190\) & \(2{,}1\times\) \\
+        Raspberry Pi 5-CPU & 39 & \(10948{,}63\) & \(0{,}091\) & \(1{,}0\times\) \\
+        \bottomrule
+    \end{tabular}
+    \caption[Inferentiesnelheid op drie platformen]{Gemiddelde tijd en theoretische modeldoorvoer voor CSRNet op één beeld van \(1024 \times 768\) pixels, na drie opwarmruns en over twintig gemeten runs. Alleen de voorwaartse modelberekening is gemeten.}
+    \label{tab:inference-platforms}
+\end{table}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.92\textwidth]{csrnet-inference-platformvergelijking.png}
+    \caption[CSRNet-modeldoorvoer per platform]{Modeldoorvoer per platform op een logaritmische schaal. De waarden zijn model-FPS en geen FPS van een volledige videoketen.}
+    \label{fig:inference-platforms}
+\end{figure}
+
+De Raspberry Pi heeft gemiddeld \(10{,}95\) seconden nodig voor één beeld en haalt dus ongeveer één model-doorloop per elf seconden. De RTX 3050 Ti is in dit meetprotocol ongeveer honderdmaal sneller. Ook de laptop-CPU blijft met \(0{,}190\) FPS ruim onder de GPU. De identieke voorspelde telling van \(210{,}880\) personen op beide CPU's bevestigt dat hetzelfde checkpoint en dezelfde voorbewerking zijn gebruikt. Eén beeld zegt vanzelfsprekend niets over de nauwkeurigheid van het model op de volledige testset.
+
+De Raspberry Pi startte de meetreeks bij \(57{,}9\)~\textdegree C en eindigde bij \(71{,}6\)~\textdegree C. Voor de test gaf \texttt{vcgencmd get\_throttled} de waarde \texttt{0x0}; nadien was dit \texttt{0xe0000}. Volgens de documentatie van Raspberry Pi betekenen de ingestelde historische bits dat frequentiebegrenzing, throttling en de zachte temperatuurlimiet tijdens de belasting zijn opgetreden \autocite{RaspberryPiVcgencmd}. Er was geen bit voor onderspanning ingesteld. De waarde van \(0{,}091\) FPS beschrijft daardoor het volgehouden gedrag met de aanwezige koeling, niet de korte piekprestatie van een koude processor.
+
+Geen van de drie metingen haalt 15 FPS. Zelfs de laptop-GPU blijft met ongeveer \(9{,}3\) model-doorlopen per seconde onder die mogelijke doelwaarde, terwijl de volledige keten nog extra tijd vraagt. Ongewijzigde CSRNet-inferentie op de CPU van deze Raspberry Pi is dus niet bruikbaar voor een realtime videostroom. Een vervolgproef op edgehardware moet een lichter model, een kleinere invoerresolutie, pruning of kwantisatie onderzoeken en kan daarnaast een geschikte hardwareversneller testen.
+
+Figuur~\ref{fig:csrnet-training-curves} toont het volledige trainingsverloop. De trainingsloss daalt globaal van \(7{,}1764\) op epoch 1 naar \(1{,}8015\) op epoch 100. De validatie-MAE en -RMSE fluctueren duidelijk, onder meer door de willekeurige trainingsuitsneden en de beperkte validatieset van veertig beelden. Er is geen eenduidig patroon van aanhoudende overfitting: ook na epoch 80 worden nog MAE-waarden tussen ongeveer zeven en negen bereikt. De laagste MAE ligt wel op epoch 39, waardoor het bewaren van \texttt{best.pt} noodzakelijk is en het laatste checkpoint niet automatisch als eindmodel mag worden gebruikt.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.9\textwidth]{csrnet-training-curves-100-epochs.png}
+    \caption[Trainingsverloop van de finale CSRNet-run]{Trainingsloss en validatie-MAE/RMSE over 100 epochs. Het rode punt duidt de geselecteerde epoch 39 met de laagste validatie-MAE aan.}
+    \label{fig:csrnet-training-curves}
+\end{figure}
+
+De run gebruikt bewust geen automatische early stopping, zodat het volledige verloop kan worden geanalyseerd. Het afzonderlijke beste checkpoint voorkomt dat latere, minder goede epochs het geselecteerde model vervangen. Voor bijkomende configuraties kan een vooraf vastgelegde patience worden toegevoegd om rekentijd te besparen, maar die keuze mag niet achteraf op basis van de testset worden aangepast.
+
+De finale run bevestigt dat meerdere epochs noodzakelijk zijn om deze CSRNet-baseline te verfijnen. Voor een sterkere experimentele onderbouwing kunnen dezelfde configuratie met meerdere seeds en CSRNet met minstens één alternatief model, bijvoorbeeld MCNN, worden vergeleken. Daarna zijn rechtmatig verkregen beelden uit de doelcontext, camerakalibratie naar het grondvlak en een evaluatie per camera nodig. Pas dan kan worden beoordeeld in welke mate een model een bruikbare basis vormt voor druktemeting tijdens de Gentse Feesten.

@@ -11,7 +11,6 @@
 % - If you write your thesis in English (remark: only possible after getting
 %   explicit approval!), remove the option "dutch," or replace with "english".
 
-\usepackage{lipsum} % For blind text, can be removed after adding actual content
 
 %% Pictures to include in the text can be put in the graphics/ folder
 \graphicspath{{../graphics/}}
@@ -25,8 +24,9 @@
 \usemintedstyle{solarized-light}
 
 %% Formatting for minted environments.
+%% Code is left-aligned in the sources, so autogobble is unnecessary. Minted
+%% 2 in the school container otherwise calls the absent `python` alias.
 \setminted{%
-    autogobble,
     frame=lines,
     breaklines,
     linenos,
@@ -52,10 +52,12 @@
 \author{Wouter Vantienen}
 \supervisor{Ferre De Belie}
 %\cosupervisor{Mevr. S. Beeckman}
-\title[Optionele ondertitel]%
-    {Real-time detectie van personendichtheid op de Gentse Feesten via beeldanalyse}
+\title{%
+    \texorpdfstring{Real-time detectie van\\personendichtheid op de\\Gentse Feesten via beeldanalyse}%
+    {Real-time detectie van personendichtheid op de Gentse Feesten via beeldanalyse}%
+}
 \academicyear{\advance\year by -1 \the\year--\advance\year by 1 \the\year}
-\examperiod{1}
+\examperiod{3}
 \degreesought{\IfLanguageName{dutch}{Professionele bachelor in de toegepaste informatica}{Bachelor of applied computer science}}
 \partialthesis{false} %% To display 'in partial fulfilment'
 %\institution{Internshipcompany BVBA.}
@@ -133,6 +135,7 @@
 \input{inleiding}
 \input{standvanzaken}
 \input{methodologie}
+\input{implementatie}
 
 % Voeg hier je eigen hoofdstukken toe die de ``corpus'' van je bachelorproef
 % vormen. De structuur en titels hangen af van je eigen onderzoek. Je kan bv.
@@ -152,16 +155,13 @@
 
 Het onderwerp van deze bachelorproef is gebaseerd op een onderzoeksvoorstel dat vooraf werd beoordeeld door de promotor. Dat voorstel is opgenomen in deze bijlage.
 
-%% TODO: 
-%\section*{Samenvatting}
-
-% Kopieer en plak hier de samenvatting (abstract) van je onderzoeksvoorstel.
-
-Grootschalige openluchtevenementen zoals de Gentse Feesten brengen aanzienlijke drukte met zich mee, wat voor veel uitdagingen zorgt voor hulpdiensten. De huidige methoden voor crowd control schieten vaak te kort, omdat ze subjectief, reactief of arbeidsintensief zijn. Uit onderzoek blijkt dat er nood is aan een geautomatiseerd systeem dat real-time druktecontrole kan bieden. Daarom richt dit onderzoek zich op hoe computervisie ingezet kan worden om real-time, privacy-vriendelijk personendichtheid te voorspellen en te visualiseren. Tijdens het onderzoek gaan we een vergelijkende studie van bestaande modellen voeren. Daarna wordt er relevante data verzameld, waarop we de modellen trainen en evalueren. Op basis van de resultaten wordt een Proof of Concept ontwikkeld, gericht op de Gentse Feesten. Het verwachte resultaat is een werkend systeem dat real-time druktevisualisatie mogelijk maakt met een nauwkeurigheid van <10 MAE met >15 fps, en automatisch waarschuwingen genereert bij kritieke dichtheden, waardoor hulpdiensten proactief kunnen ingrijpen. Dit vervangt subjectieve handmatige schattingen door objectieve geautomatiseerde voorspellingen. Dit systeem zal gemakkelijk te integreren zijn met bestaande infrastructuur, heeft geen speciale hardware nodig, en voldoet aan de privacywetgeving.
+Het oorspronkelijke onderzoeksvoorstel vertrekt van de vraag hoe computervisie hulpdiensten en organisatoren kan ondersteunen met een actueel beeld van lokale drukte tijdens de Gentse Feesten. Het stelt voor om bestaande methoden voor crowd counting te onderzoeken en een Proof of Concept met density estimation uit te werken. De huidige bachelorproef verfijnt die ambitie: de PoC wordt uitsluitend beoordeeld als technische baseline op ShanghaiTech Part B. Zij levert een schatting van het aantal personen en relatieve druktezones in beeldcoördinaten, maar niet zonder bijkomende kalibratie een fysieke dichtheid in personen per vierkante meter of een operationeel alarm. De volgende pagina's bevatten het oorspronkelijke, vooraf beoordeelde voorstel.
 
 
 % Verwijzing naar het bestand met de inhoud van het onderzoeksvoorstel
 \input{../voorstel/voorstel-inhoud}
+
+\input{reproduceerbaarheid}
 
 %%---------- Andere bijlagen --------------------------------------------------
 % TODO: Voeg hier eventuele andere bijlagen toe. Bv. als je deze BP voor de

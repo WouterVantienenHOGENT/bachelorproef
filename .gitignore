@@ -23,6 +23,7 @@
 # *.ps
 # *.eps
 *.pdf
+/docs/
 
 ## Bibliography auxiliary files (bibtex/biblatex/biber):
 *.bbl
@@ -40,6 +41,7 @@
 *.synctex.gz(busy)
 *.pdfsync
 *.tcp
+__pycache__/
 
 ## Auxiliary and intermediate files from other packages:
 
@@ -134,3 +136,5 @@ sympy-plots-for-*.tex/
 # output directory - see make_thesis.sh
 output/
 out/
+
+*/runs/

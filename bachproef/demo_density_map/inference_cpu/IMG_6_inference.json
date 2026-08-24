@@ -1,0 +1,17 @@
+{
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/bachproef/runs/shanghaitech_part_b_cpu_first/best.pt",
+  "checkpoint_epoch": 1,
+  "device": "cpu",
+  "device_name": "CPU",
+  "estimated_count": 265.089599609375,
+  "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/bachproef/data/processed/shanghaitech_part_b/test/images/IMG_6.jpg",
+  "image_size": [
+    1024,
+    768
+  ],
+  "mean_forward_ms": 7927.8678700000455,
+  "timed_runs": 5,
+  "timestamp_utc": "2026-07-25T12:05:44.929440+00:00",
+  "total_command_ms": 49280.1694259997,
+  "warmup_runs": 1
+}

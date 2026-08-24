@@ -1,33 +1,74 @@
 \chapter{\IfLanguageName{dutch}{Stand van zaken}{State of the art}}%
 \label{ch:stand-van-zaken}
 
-% Tip: Begin elk hoofdstuk met een paragraaf inleiding die beschrijft hoe
-% dit hoofdstuk past binnen het geheel van de bachelorproef. Geef in het
-% bijzonder aan wat de link is met het vorige en volgende hoofdstuk.
+Dit hoofdstuk situeert de Gentse Feesten als casus voor lokale druktemeting. Eerst worden de veiligheidscontext en de beperkingen van bestaande meetmethoden besproken. Daarna volgt een afbakening van computervisiemethoden, met bijzondere aandacht voor \emph{density estimation}. De bespreking leidt tot de keuze van CSRNet als reproduceerbare eerste baseline.
 
-% Pas na deze inleidende paragraaf komt de eerste sectiehoofding.
+\section{De Gentse Feesten als casus}
 
-\subsection{De uitdagingen en gevaren van crowd control}
+De Gentse Feesten ontstonden in 1843 als centraal georganiseerde Gemeentefeesten. Na een periode van teruglopende belangstelling kregen zij vanaf 1970 een nieuwe impuls rond Sint-Jacobs, onder meer door Walter De Buck en Trefpunt. Sindsdien groeiden de Feesten uit tot een groot cultureel volksfeest dat gedurende tien dagen in de Gentse binnenstad plaatsvindt. In 2021 werden de Gentse Feesten erkend als Vlaams Immaterieel Erfgoed. Tijdens de editie van 2023 werden meer dan 1,6 miljoen bezoekers geteld \autocite{StadGentGeschiedenis}.
 
-Grootschalige openluchtevenementen zoals de Gentse Feesten brengen aanzienlijke drukte met zich mee. Uit onderzoek van \textcite{Helbing2000} blijkt dat mensen in drukte onvoorspelbaar gedrag kunnen vertonen. Dit wordt bevestigd door \textcite{Zeitz2009}. Het voorspellen van menselijk gedrag in drukte is een serieuze uitdaging, omdat er veel factoren zijn die het gedrag kunnen beïnvloeden. 
-Het uitwisselen van informatie tussen organisatoren en verschillende hulpdiensten is cruciaal om snel en effectief de veiligheid van bezoekers te kunnen garanderen. Uit onderzoek van \textcite{Hutton2025} blijkt dat dit een nog altijd een grote uitdaging is. 
-Dit komt allemaal samen in gevaarlijke situaties dat al meerdere levens heeft gekost. Onderzoek van \textcite{Dickie1995} toont aan dat dit incorrect inschatten en plannen rond drukte leidt tot meerdere incidenten waarbij levens verloren zijn gegaan. Verder toont dit onderzoek aan dat communicatie tussen hulpdiensten noodzakelijk is om levens te redden.
-OOk recente incidenten zoals Astroworld in 2021 tonen aan dat dit nog steeds een actueel probleem is.
+In tegenstelling tot een evenement op een afgesloten terrein zijn de Gentse Feesten verspreid over pleinen, straten en binnenlocaties. Bezoekers kunnen zich vrij tussen die locaties verplaatsen en de bezetting verandert voortdurend doorheen de dag en nacht. Het totale bezoekersaantal zegt daarom weinig over de drukte op één specifieke plaats. Wanneer programma's gelijktijdig eindigen of bezoekersstromen samenkomen in smalle straten, kan de lokale bezetting snel toenemen.
 
-\subsection{Een nood aan automatisatie}
+Recente edities illustreren dat zulke veranderingen operationele aandacht vragen. Tijdens de openingsavond van 2023 liet de politie tijdelijk geen bijkomende bezoekers toe op Boomtown en het Laurentplein, omdat het er te druk werd \autocite{Schouppe2023}. In 2024 bleven de pleinen uitzonderlijk een uur langer open om een gelijktijdige uitstroom na een bijzonder drukke dag te vermijden \autocite{Aneca2024}. Deze situaties tonen niet noodzakelijk een incident aan, maar wel dat organisatoren soms snel moeten beslissen op basis van veranderende bezoekersstromen.
 
-Om voorgaande risico's te vermijden, vertrouwen organisatoren en hulpdiensten nog vaak op handmatige tellingen en kennis van voorgaande edities. Deze traditionele methoden zijn vaak subjectief, reactief en hebben een grote vertraging tot het nemen van actie. Doordat mensen handmatig moeten tellen, en vervolgens dit allemaal moeten communiceren, is er een grote kans op fouten en vertragingen. 
-Er is duidelijk nood aan een automatisch systeem dat real-time een accurate inschatting kan maken van drukte. Binnen dit domein is er al veel onderzoek gedaan naar computervisie en deep learning technieken. Maar volgens \textcite{Khan2020} blijft het accuraat voorspellen van drukte in real-time, en zeker in ongewone situaties, een grote uitdaging. Bestaande computervisie-modellen zijn geoptimaliseerd voor het herkennen van objecten, en minden voor het voorspellen van drukte. Verder is er natuurlijk ook een gebrek aan data.
-Om deze specifieke uitdagingen aan te pakken, wijst een recent survey van \textcite{Gao2025} op het potentieel van density estimation modellen. Standaard object detection modellen zoals Convolutional Neural Networks (CNN's) zijn gericht op het detecteren en tellen van individuele personen, wat tot incorrecte voorspelling leidt in drukke omgevingen. Density estimation modellen analyseren de dichtheid van mensen in een bepaald gebied. Dit resulteert in een zogenaamde density map, wat een visuele representatie is van de dichtheid van mensen in een bepaald gebied. Deze aanpak is efficiënter, en kan beter overweg met variaties en ongewone situaties.
+Stad Gent onderzocht eerder al, samen met onder meer de Universiteit Gent, verschillende vormen van druktemeting. Het project VLOED noemt fijnmazige informatie over de ruimtelijke spreiding van drukte, aangevuld met actuele gegevens en voorspellingen, als belangrijke behoefte \autocite{StadGentVloed}. Een automatische analyse van camerabeelden kan daarop aansluiten, op voorwaarde dat de resultaten begrijpelijk, betrouwbaar en zorgvuldig ingebed zijn in de bestaande besluitvorming.
 
-\subsection{Density Estimation modellen}
-Zoals eerder vermeld, zijn density estimation modellen een veelbelovende aanpak voor druktecontrole en voorspellingen. In plaats van het tellen van individuele personen, analyseren deze modellen de dichtheid van mensen in een bepaald gebied. Hierdoor zijn de modellen in staat om een density map te maken.
-Er zijn 2 populaire modellen die deze aanpak gebruiken, namelijk CSRNet en MCNN. CRSNet, ontwikkeld door \textcite{Li2018}, maakt gebruik van een standaard CNN, en een dilated convolutional layers, wat de traditionele pooling layers vervangt. Hierdoor kan het model een betere resolutie behouden, en daardoor nauwkeurigere density maps genereren.
-MCNN, ontwikkeld door \textcite{Zhang2016}, maakt gebruik van meerdere parallele CNN's met verschillende filtergroottes. Hierdoor blinkt dit model uit in het omgaan met variaties in perspectief. Hierdoor kan het model beter omgaan met ongewone situaties. 
-Het uitwerken en implementeren van deze modellen, vormt de technische basis van de geplande PoC voor de Gentse Feesten. 
+\section{Risico's bij lokale drukte}
 
-De ultieme uitdaging zal zijn om deze modellen te optimaliseren voor de Gentse Feesten, en te zorgen dat ze in real-time kunnen draaien. Een effectief systeem zal een balans moeten vinden tussen nauwkeurigheid, verwerkingssnelheid, en benodigde rekenkracht.
-Tot slot is het belangrijk om rekening te houden met de privacy van bezoekers. Het systeem zal moeten voldoen aan de GDPR-regelgeving. Dit zal gedaan worden door on-device verwerking, en geen opslag van beelden of persoonlijke gegevens. Ook zullen er technieken gebruikt worden om de beelden te anonimiseren, aangezien dit niet van belang is voor het tellen van mensen.
+De veiligheid van een menigte hangt niet alleen af van het aantal aanwezigen. Ook de beschikbare ruimte, de vorm van doorgangen, de richting en snelheid van stromen, de duur van de drukte en de communicatie tussen betrokken diensten spelen een rol \autocite{Helbing2000,Zeitz2009,Hutton2025}. Hoge dichtheden kunnen de bewegingsvrijheid sterk beperken; in combinatie met ongunstige omstandigheden kunnen zij tot gevaarlijke druk en verlies van controle over de beweging leiden. Een systeem voor druktemeting moet daarom als vroegtijdige informatiebron worden beschouwd, niet als een zelfstandige voorspeller van incidenten.
 
+Literatuur noemt dichtheden van ongeveer acht tot tien personen per vierkante meter als bijzonder kritisch \autocite{Haghani2022}. Een vaste alarmwaarde kan echter niet rechtstreeks uit een camerabeel of density map worden afgeleid. Daarvoor moet elk beeld eerst via camerakalibratie en een grondvlaktransformatie aan een reële oppervlakte worden gekoppeld. Ook de locatie, de richting van de stroom en de duur van een verhoogde dichtheid moeten in een operationele drempel worden meegenomen. In deze bachelorproef wordt daarom geen veiligheidsdrempel ingesteld; de PoC beperkt zich tot personentellingen en relatieve druktepatronen in beeldcoördinaten.
 
+\section{Bestaande meetmethoden en de rol van automatisering}
 
+Organisatoren combineren vaak terreinobservaties, handmatige tellingen en ervaring uit voorgaande edities. Deze bronnen blijven waardevol, maar zijn niet continu en niet overal tegelijk beschikbaar. Tussen de waarneming, de interpretatie, de communicatie en een eventuele maatregel ontstaat bovendien onvermijdelijk vertraging. Automatische metingen kunnen die menselijke beoordeling aanvullen met een regelmatige en reproduceerbare indicatie van lokale veranderingen.
+
+WiFi- en Bluetoothsignalen kunnen worden gebruikt om personen te tellen of te lokaliseren \autocite{GuillenPerez2019}. Hun ruimtelijke resolutie en nauwkeurigheid hangen echter af van de meetopstelling, de aanwezigheid van apparaten en de gebruikte methode. Camerabeelden bieden in principe een fijnere ruimtelijke observatie van één afgebakende zone, maar stellen eisen aan zichtbaarheid, rekenkracht, privacy en robuustheid tegen variaties in de scène. Computervisie is daarom geen vervanging van andere meetbronnen, maar een mogelijke aanvullende sensor.
+
+\section{Computervisie voor crowd counting}
+
+De meeste moderne methoden voor beeldanalyse gebruiken convolutionele neurale netwerken (CNN's), die visuele patronen uit beelden leren \autocite{OShea2015}. Binnen crowd counting zijn twee uitvoerwijzen relevant. \emph{Objectdetectie} zoekt individuele personen en voorspelt voor elke detectie een begrenzingskader. \emph{Density estimation} voorspelt daarentegen een tweedimensionale kaart waarvan de waarden de lokale aanwezigheid van personen weergeven. Beide benaderingen kunnen CNN's gebruiken; het verschil ligt dus in de taak en de uitvoer, niet in het al dan niet gebruiken van een CNN.
+
+Objectdetectie is aantrekkelijk wanneer personen voldoende zichtbaar en van elkaar te onderscheiden zijn. YOLO is bijvoorbeeld ontworpen voor snelle objectdetectie \autocite{Redmon2016}. In dichte menigtes verminderen overlap, schaalverschillen en gedeeltelijke zichtbaarheid echter de betrouwbaarheid van afzonderlijke detecties \autocite{Khan2020}. Een density-estimationmodel hoeft niet voor elke persoon een afzonderlijk kader te vinden. Het kan daardoor in zulke scènes een bruikbare telling en ruimtelijk patroon leveren, al blijft de nauwkeurigheid afhankelijk van de trainingsdata en de gelijkenis met de doelomgeving.
+
+Een \emph{density map} is geen directe kaart in personen per vierkante meter. De kaart is gekoppeld aan beeldpixels of aan cellen in de uitvoerresolutie van het model. De som van alle waarden levert een geschat aantal personen in het zichtveld. Pas na camerakalibratie en projectie naar het grondvlak kan een dichtheidswaarde aan een fysieke oppervlakte worden gekoppeld.
+
+\section{Selectie van een eerste baseline}
+
+Tabel~\ref{tab:long-list-modellen} vergelijkt kandidaatmodellen op basis van hun hoofdidee, hun sterkte voor deze casus en hun voornaamste beperking. De tabel is geen benchmark: de modellen worden niet onder identieke omstandigheden uitgevoerd. Zij dient uitsluitend om de keuze voor een eerste implementatie te verantwoorden.
+
+\begin{table}[htbp]
+    \centering
+    \small
+    \begin{tabular}{|p{2.4cm}|p{2.6cm}|p{4.2cm}|p{4.1cm}|}
+        \hline
+        \textbf{Model} & \textbf{Categorie} & \textbf{Relevante sterkte} & \textbf{Beperking voor deze PoC} \\
+        \hline
+        YOLO \autocite{Redmon2016} & Objectdetectie & Snelle detectie wanneer personen afzonderlijk zichtbaar zijn. & Overlap tussen personen bemoeilijkt afzonderlijke detecties. \\
+        \hline
+        Faster R-CNN & Objectdetectie & Sterke referentie voor nauwkeurige objectdetectie. & Complexer en doorgaans trager voor een eerste baseline met real-timeambitie. \\
+        \hline
+        SSD & Objectdetectie & Relatief compacte detector met een bruikbare snelheids-nauwkeurigheidsbalans. & Blijft afhankelijk van afzonderlijke begrenzingskaders. \\
+        \hline
+        RetinaNet & Objectdetectie & Ontworpen om de onbalans tussen achtergrond en objecten te beperken. & Niet specifiek gericht op zeer dichte menigtes. \\
+        \hline
+        CSRNet \autocite{Li2018} & Density estimation & Gedilateerde convoluties behouden context en ruimtelijk detail. & Vereist training en validatie voor de doelomgeving. \\
+        \hline
+        MCNN \autocite{Zhang2016} & Density estimation & Meerdere kolommen behandelen schaal- en perspectiefvariatie. & Oudere en zwaardere architectuur als eerste baseline. \\
+        \hline
+        SANet & Density estimation & Combineert informatie op verschillende schalen. & Hogere implementatiecomplexiteit. \\
+        \hline
+        CAN & Density estimation & Gebruikt contextuele informatie voor de dichtheidsschatting. & Hogere complexiteit en minder geschikt voor een minimale baseline. \\
+        \hline
+    \end{tabular}
+    \caption[Selectie van kandidaatmodellen]{Kwalitatieve selectie van kandidaatmodellen voor druktemeting.}
+    \label{tab:long-list-modellen}
+\end{table}
+
+CSRNet wordt geselecteerd als eerste baseline omdat de architectuur specifiek is ontwikkeld voor dicht bezette scènes, volledig convolutioneel is en goed gedocumenteerd werd op ShanghaiTech \autocite{Li2018}. MCNN blijft een zinvolle referentie voor toekomstig vergelijkend onderzoek, maar wordt binnen de beschikbare scope niet geïmplementeerd. De resultaten in deze bachelorproef mogen bijgevolg niet worden gelezen als een vergelijking tussen modellen.
+
+\section{Privacy en gegevensbescherming}
+
+Density estimation heeft als voordeel dat de PoC geen gezichten herkent, personen heridentificeert of trajecten volgt. Dat beperkt de functionaliteit tot een telling en een ruimtelijk patroon. De camerabeelden kunnen desondanks personen identificeerbaar in beeld brengen en zijn dan persoonsgegevens. Een density-estimationmodel maakt de verwerking dus niet automatisch anoniem of conform de AVG.
+
+Een productie-oplossing vereist minstens een welbepaalde rechtsgrond en doel, dataminimalisatie, transparante informatie voor bezoekers, beperkte bewaartermijnen, toegangscontrole en passende beveiliging. Bij grootschalige monitoring van een publiek toegankelijke ruimte kan bovendien een gegevensbeschermingseffectbeoordeling vereist zijn \autocite{EDPBVideo2020}. Praktische maatregelen, zoals verwerking aan de rand van het netwerk, het niet bewaren van ruwe beelden en het beperken van de analyse tot afgebakende zones, verdienen daarbij verder onderzoek. De PoC evalueert deze maatregelen niet en doet geen uitspraak over juridische conformiteit.

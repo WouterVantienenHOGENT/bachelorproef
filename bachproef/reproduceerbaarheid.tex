@@ -1,0 +1,181 @@
+%%=============================================================================
+%% Bijlage: broncode en reproduceerbaarheid
+%%=============================================================================
+
+\chapter{Broncode en reproduceerbaarheid}
+\label{app:broncode}
+
+Deze bijlage beperkt zich tot de code die de opbouw van CSRNet, de dataverwerking, de trainingslus en de inferentie bepaalt. Hulpscripts voor figuren, rapportage en regressietests zijn niet afgedrukt. De volledige uitvoerbare code staat in de volgende GitHub-repository:
+\begin{center}
+    \url{https://github.com/WouterVantienenHOGENT/bachelorproef}
+\end{center}
+De README bevat de commando's voor datavoorbereiding, training, evaluatie en inferentie.
+
+De ruwe ShanghaiTech-data worden niet herverdeeld. Wie het experiment herhaalt, moet de dataset via de oorspronkelijke aanbieder verkrijgen. De digitaal ingediende runmappen bevatten de configuraties, metrieken en samenvattingen. Grote modelcheckpoints en de dataset maken geen deel uit van deze tekstuele bijlage.
+
+\section{Pakketversies}
+
+\subsection{Laptop-GPU}
+\inputminted[fontsize=\scriptsize]{text}{../crowd_counting/requirements-final.txt}
+
+\subsection{Raspberry Pi 5}
+\inputminted[fontsize=\scriptsize]{text}{../crowd_counting/requirements-rpi.txt}
+
+\clearpage
+\section{CSRNet-model}
+\inputminted[fontsize=\scriptsize]{python}{../crowd_counting/csrnet.py}
+
+\clearpage
+\section{Dataset en density maps}
+\inputminted[fontsize=\scriptsize]{python}{../crowd_counting/data.py}
+
+\clearpage
+\section{Training}
+Onderstaande fragmenten tonen de opbouw van de dataloaders en het model, gevolgd door de eigenlijke trainings- en validatielus. Argumentverwerking, hervatten van checkpoints en het wegschrijven van metriekbestanden zijn beschikbaar in het digitale bronbestand.
+\begin{minted}[fontsize=\scriptsize,firstnumber=235]{python}
+train_set = DensityMapDataset(
+    args.train_images, args.train_densities, args.crop_size, "train"
+)
+val_set = DensityMapDataset(
+    args.val_images, args.val_densities, args.crop_size, "eval"
+)
+loader_options = {
+    "num_workers": args.workers,
+    "pin_memory": device.type == "cuda",
+    "generator": loader_generator,
+}
+train_loader = DataLoader(
+    train_set,
+    batch_size=args.batch_size,
+    shuffle=True,
+    **loader_options,
+)
+val_loader = DataLoader(
+    val_set,
+    batch_size=1,
+    shuffle=False,
+    **loader_options,
+)
+
+model = CSRNet(
+    pretrained_frontend=not args.no_pretrained and resume_path is None
+).to(device)
+optimizer = torch.optim.Adam(model.parameters(), lr=args.lr, weight_decay=1e-4)
+criterion = nn.MSELoss(reduction="sum")
+scaler = torch.amp.GradScaler("cuda", enabled=device.type == "cuda")
+\end{minted}
+
+\begin{minted}[fontsize=\scriptsize,firstnumber=339]{python}
+for epoch in range(start_epoch, args.epochs + 1):
+    epoch_started = time.perf_counter()
+    if device.type == "cuda":
+        torch.cuda.reset_peak_memory_stats(device)
+    model.train()
+    running_loss = 0.0
+    for images, targets, _ in train_loader:
+        optimizer.zero_grad(set_to_none=True)
+        with torch.autocast(
+            device_type=device.type, enabled=device.type == "cuda"
+        ):
+            prediction = model(
+                images.to(device, non_blocking=device.type == "cuda")
+            )
+            loss = criterion(
+                prediction,
+                targets.to(device, non_blocking=device.type == "cuda"),
+            ) / images.shape[0]
+        scaler.scale(loss).backward()
+        scaler.step(optimizer)
+        scaler.update()
+        running_loss += loss.item()
+    synchronize(device)
+    training_seconds = time.perf_counter() - epoch_started
+
+    validation_started = time.perf_counter()
+    mae, rmse, forward_ms = evaluate(model, val_loader, device)
+    validation_seconds = time.perf_counter() - validation_started
+    epoch_seconds = time.perf_counter() - epoch_started
+    train_loss = running_loss / len(train_loader)
+    peak_memory_mib = (
+        torch.cuda.max_memory_allocated(device) / (1024**2)
+        if device.type == "cuda"
+        else 0.0
+    )
+    metric: dict[str, object] = {
+        "epoch": epoch,
+        "train_loss": train_loss,
+        "val_mae": mae,
+        "val_rmse": rmse,
+        "train_seconds": training_seconds,
+        "validation_seconds": validation_seconds,
+        "epoch_seconds": epoch_seconds,
+        "val_forward_ms_per_image": forward_ms,
+        "peak_cuda_memory_mib": peak_memory_mib,
+        "completed_at_utc": utc_now(),
+    }
+    is_best = mae < best_mae
+    if is_best:
+        best_mae = mae
+        best_metric = dict(metric)
+
+    checkpoint = {
+        "format_version": 2,
+        "epoch": epoch,
+        "model": model.state_dict(),
+        "optimizer": optimizer.state_dict(),
+        "scaler": scaler.state_dict(),
+        "mae": mae,
+        "rmse": rmse,
+        "metric": metric,
+        "best_metric": best_metric,
+        "args": vars(args),
+        "rng_state": capture_rng_state(loader_generator),
+    }
+    atomic_torch_save(checkpoint, output_dir / "last.pt")
+    if is_best:
+        atomic_torch_save(checkpoint, output_dir / "best.pt")
+    if args.checkpoint_every and epoch % args.checkpoint_every == 0:
+        atomic_torch_save(checkpoint, output_dir / f"epoch_{epoch:03d}.pt")
+    append_metric(metrics_path, metric)
+\end{minted}
+
+\clearpage
+\section{Inferentie en FPS-benchmark}
+Dit fragment laadt een checkpoint en beeld, voert de opwarm- en meetruns uit en berekent de density map en model-FPS. De CLI-definitie en CSV-rapportage blijven in het digitale bronbestand.
+\begin{minted}[fontsize=\scriptsize,firstnumber=65]{python}
+device = select_device(args.device)
+checkpoint = torch.load(args.checkpoint, map_location=device, weights_only=False)
+model = CSRNet(pretrained_frontend=False).to(device)
+model.load_state_dict(checkpoint["model"])
+model.eval()
+with Image.open(args.image) as source:
+    image = source.convert("RGB")
+array = np.asarray(image).copy()
+tensor = torch.from_numpy(array).permute(2, 0, 1).float() / 255
+tensor = (
+    tensor - torch.tensor(IMAGENET_MEAN)[:, None, None]
+) / torch.tensor(IMAGENET_STD)[:, None, None]
+# Padding lets arbitrary image sizes pass through the stride-8 model.
+pad_h, pad_w = (-image.height) % 8, (-image.width) % 8
+tensor = F.pad(tensor, (0, pad_w, 0, pad_h)).unsqueeze(0).to(device)
+with torch.inference_mode():
+    for _ in range(args.warmup_runs):
+        model(tensor)
+    synchronize(device)
+    forward_started = time.perf_counter()
+    prediction = None
+    for _ in range(args.timed_runs):
+        prediction = model(tensor)
+    synchronize(device)
+    forward_seconds = time.perf_counter() - forward_started
+    assert prediction is not None
+    density = prediction[0, 0].cpu().numpy()
+density = density[: (image.height + 7) // 8, : (image.width + 7) // 8]
+output_dir = Path(args.output_dir)
+output_dir.mkdir(parents=True, exist_ok=True)
+stem = Path(args.image).stem
+np.save(output_dir / f"{stem}_density.npy", density)
+plt.imsave(output_dir / f"{stem}_density.png", density, cmap="jet")
+forward_ms = 1000 * forward_seconds / args.timed_runs
+frames_per_second = 1000 / forward_ms
+\end{minted}

@@ -1,0 +1,17 @@
+{
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/bachproef/runs/shanghaitech_part_b_cpu_first/best.pt",
+  "checkpoint_epoch": 1,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "estimated_count": 265.10296630859375,
+  "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/bachproef/data/processed/shanghaitech_part_b/test/images/IMG_6.jpg",
+  "image_size": [
+    1024,
+    768
+  ],
+  "mean_forward_ms": 108.55856499993024,
+  "timed_runs": 20,
+  "timestamp_utc": "2026-07-25T12:19:04.275235+00:00",
+  "total_command_ms": 5368.096508000235,
+  "warmup_runs": 3
+}

@@ -5,38 +5,44 @@
 \chapter{\IfLanguageName{dutch}{Methodologie}{Methodology}}%
 \label{ch:methodologie}
 
-%% TODO: In dit hoofstuk geef je een korte toelichting over hoe je te werk bent
-%% gegaan. Verdeel je onderzoek in grote fasen, en licht in elke fase toe wat
-%% de doelstelling was, welke deliverables daar uit gekomen zijn, en welke
-%% onderzoeksmethoden je daarbij toegepast hebt. Verantwoord waarom je
-%% op deze manier te werk gegaan bent.
-%% 
-%% Voorbeelden van zulke fasen zijn: literatuurstudie, opstellen van een
-%% requirements-analyse, opstellen long-list (bij vergelijkende studie),
-%% selectie van geschikte tools (bij vergelijkende studie, "short-list"),
-%% opzetten testopstelling/PoC, uitvoeren testen en verzamelen
-%% van resultaten, analyse van resultaten, ...
-%%
-%% !!!!! LET OP !!!!!
-%%
-%% Het is uitdrukkelijk NIET de bedoeling dat je het grootste deel van de corpus
-%% van je bachelorproef in dit hoofstuk verwerkt! Dit hoofdstuk is eerder een
-%% kort overzicht van je plan van aanpak.
-%%
-%% Maak voor elke fase (behalve het literatuuronderzoek) een NIEUW HOOFDSTUK aan
-%% en geef het een gepaste titel.
+Dit onderzoek combineert een literatuurstudie met een experimentele evaluatie van een reproduceerbare CSRNet-baseline. De literatuurstudie kadert de operationele nood, de technische mogelijkheden en de beperkingen van beeldanalyse. Het experiment toetst vervolgens of de volledige keten --- van puntannotaties tot density map, modeltraining en full-image-evaluatie --- technisch correct werkt. De resultaten zijn bedoeld als baseline en niet als bewijs dat het systeem al inzetbaar is op de Gentse Feesten.
 
-Dit onderzoek zal in een eerste fase een grondige literatuurstudie zijn naar bestaande modellen voor druktecontrole op basis van computervisie en deep learning. We zullen de voor- en nadelen van de verschillende modellen analyseren, en vergelijken met elkaar. Dit wordt gevolgd door een technische uitwerking van een PoC. Hierbij zullen we een bestaand density estimation model verder optimaliseren voor gebruik tijdens de Gentse Feesten.
+\section{Literatuurstudie en afbakening}
 
-\textbf{Fase 1: Literatuur (maand 1): } We starten met een uitgebreide literatuurstudie om de huidige stand van zaken te begrijpen. Het recente survey van \textcite{Gao2025} zal als basis dienen. Verder gaan we ook dieper in op de kern van het probleem. We bestuderen welke factoren het gedrag van mensen in massa beïnvloeden, en hoe bestaande methoden hiermee omgaan. We analyseren waar de huidige methoden tekortschieten, en welke verbeteringen mogelijk zijn met computervisie. Op basis van deze inzichten kunnen we een shortlist maken van de meest veelbelovende modellen, die we in een volgende fase verder zullen uitwerken.
+Eerst worden crowd management, bestaande methoden voor druktemeting en computervisiemethoden onderzocht. De recente survey van \textcite{Gao2025} vormt daarbij het vertrekpunt voor density estimation; aanvullende bronnen kaderen de risico's bij massabijeenkomsten en de lokale Gentse context. Op basis hiervan wordt CSRNet geselecteerd als een goed gedocumenteerde baseline voor dichte menigtes. De keuze voor één model maakt een grondige technische validatie mogelijk, maar beperkt de uitspraken over de relatieve prestaties van andere architecturen.
 
-\textbf{Fase 2: Dataverzameling en voorbereiding (maand 2-3): } We gebruiken bestaande publieke datasets die relevant zijn voor druktecontrole, zoals de ShanghaiTech dataset. Daarnaast wordt er ook gekeken naar de mogelijkheid om aan data te komen van vorige edities van de Gentse Feesten, om zo tot een meer specifieke dataset te komen. Dit kan een meerwaarde zijn, maar het is niet noodzakelijk. Via data-aug\-men\-ta\-tie\-tech\-nie\-ken kunnen we de dataset verder uitbreiden, zodat het model robuuster wordt, en beter om kan gaan met variaties. Verder wordt er ook bekeken hoe we de camerabeelden kunnen anonimiseren, zodat we voldoen aan de GDPR-regelering.
+\section{Dataset en voorbereiding}
 
-\textbf{Fase 3: Ontwikkeling (maand 3-4): } Hier worden de gekozen modellen geïmplementeerd en getraind met de verzamelde data. Op basis van de literatuurstudie focussen we ons op density estimation modellen, zoals CSRNet en MCNN. We implementeren deze in Python met een framework zoals TensorFlow. Via hyperparameter tuning kunnen we de modellen verder optimaliseren, en de afweging maken tussen nauwkeurigheid en verwerkingssnelheid.
+Voor de eerste experimenten wordt ShanghaiTech Part B gebruikt, een deel van de dataset van \textcite{Zhang2016}. Deze subset bevat 400 officiële trainingsbeelden en 316 officiële testbeelden. Uit de officiële trainingsset worden met seed 42 veertig beelden als vaste validatieset geselecteerd; de resterende 360 beelden vormen de trainingsset. De officiële testset blijft buiten de modelselectie en wordt in deze bachelorproef enkel gebruikt voor een kwalitatieve visualisatie. Daardoor blijven de gerapporteerde MAE en RMSE zuivere validatieresultaten en worden zij niet ten onrechte als testprestaties voorgesteld.
 
-\textbf{Fase 4: Evaluatie (maand 4-5): } De prestaties van de verschillende modellen worden geëvalueerd op basis van nauwkeurigheid, verwerkingssnelheid en benodigde rekenkracht. We maken hierbij gebruik van metrieken zoals Mean Absolute Error (MAE) en Root Mean Squared Error (RMSE). Verder zijn scores zoals de F1-score en de Structural Similarity Index Measure (SSIM) belangrijk voor density maps. Uit deze evaluaties bepalen we welk model het meest geschikt is voor real-time druktecontrole tijdens de Gentse Feesten.
+De dataset bevat puntannotaties van hoofden. Voor elk beeld worden die annotaties omgezet naar een density map door op elk punt een Gaussische kernel met een vaste standaardafwijking van vier pixels te plaatsen. De map wordt daarna zo genormaliseerd dat de som van alle pixels exact gelijk is aan het aantal annotaties. Die eigenschap wordt automatisch gecontroleerd. Een vaste kernel levert een reproduceerbare baseline; perspectief- of geometrieafhankelijke kernels zijn mogelijke uitbreidingen.
 
-\textbf{Fase 5: Uitwerking (maand 5): } Op basis van de evaluatie kiezen we het beste model, en werken dit verder uit tot een volledig PoC. We documenteren het proces, en bereiden een presentatie om onze bevindingen en advies te delen met de betrokken doelgroep.
+ShanghaiTech Part B is geschikt om de technische keten te vergelijken met bestaand crowd-countingonderzoek, maar vertegenwoordigt niet de volledige variatie van camerabeelden tijdens de Gentse Feesten. Belichting, camerahoek, weersomstandigheden, lokale architectuur en bezoekersgedrag kunnen tot domeinverschuiving leiden. Een validatie met rechtmatig verkregen, representatieve lokale beelden is daarom noodzakelijk vóór een operationele toepassing.
 
-Gezien het iteratieve karakter van modelontwikkeling, is het mogelijk dat fases overlappen met elkaar. De planning is flexibel, zodat we kunnen inspelen op nieuwe inzichten die tijdens een fase naar boven komen.
+\section{Training en modelselectie}
 
+CSRNet wordt in Python met PyTorch geïmplementeerd. De ImageNet-voorgetrainde VGG-16-frontend wordt verfijnd voor density estimation; de backend met gedilateerde convoluties voorspelt de density map. Tijdens de training worden willekeurige vierkante uitsneden gebruikt om het geheugengebruik te beperken en beelden in batches te kunnen verwerken. Voor de finale configuratie bedraagt die uitsnede \(512 \times 512\) pixels. Dit is dus geen herschaling van het volledige invoerbeeld. De keuze is een praktisch compromis: tegenover een uitsnede van \(256 \times 256\) pixels krijgt het model meer ruimtelijke context te zien, terwijl vier uitsneden tegelijk op de beschikbare GPU met 4~GB VRAM passen. De cropgrootte is niet via een afzonderlijke hyperparametervergelijking als optimaal bepaald. De validatie verwerkt steeds het volledige beeld, zodat de fout betrekking heeft op de volledige geschatte telling.
+
+Voor elke trainingsrun worden de datasetversie, seed, cropgrootte, batchgrootte, leersnelheid, hardware en resultaten bewaard. Het checkpoint met de laagste validatie-MAE wordt als beste model aangeduid. Daarnaast worden het laatst voltooide checkpoint en periodieke tussentijdse checkpoints opgeslagen. Een hervatte run herstelt ook de optimizer, mixed-precisionstatus en toestand van de toevalsgetallengeneratoren. Dit protocol voorkomt dat configuraties op de officiële testset worden gekozen en maakt de experimenten controleerbaar.
+
+\section{Evaluatiecriteria}
+
+De nauwkeurigheid wordt berekend op de totale telling per volledig validatiebeeld. De MAE geeft de gemiddelde absolute afwijking in aantal personen weer; de RMSE weegt grote afwijkingen zwaarder door. Beide metrieken worden aangevuld met een visuele controle van de voorspelde density maps. Daarbij wordt nagegaan of zones met een hogere voorspelde dichtheid overeenkomen met de geannoteerde drukke zones.
+
+De technische haalbaarheid wordt beoordeeld aan de hand van de gemiddelde tijd voor één voorwaartse modelberekening op een beeld van \(1024 \times 768\) pixels met batchgrootte één. De modeldoorvoer in beelden per seconde wordt berekend als
+\[
+    \mathrm{FPS}_{\mathrm{model}} = \frac{1000}{\overline{t}_{\mathrm{forward,ms}}}.
+\]
+Voor de afzonderlijke platformbenchmark worden eerst drie opwarmruns uitgevoerd en daarna twintig voorwaartse berekeningen op hetzelfde beeld gemeten. De vergelijking omvat de laptop-GPU, de laptop-CPU en een Raspberry Pi 5-CPU. Temperatuur- en throttlingstatus worden op de Raspberry Pi voor en na de meetreeks geregistreerd. Deze meting is geen latentie van de volledige verwerkingsketen. Het laden van een videoframe, voor- en nabewerking, visualisatie en netwerkoverdracht vallen er buiten. Een mogelijke eis van 15 beelden per seconde komt neer op maximaal \(66{,}7\) ms per volledig verwerkt frame en moet daarom later op de volledige keten worden gevalideerd.
+
+\section{Beperkingen en ethische randvoorwaarden}
+
+Een density map maakt relatieve drukte in het beeld zichtbaar, maar levert zonder kalibratie geen aantal personen per vierkante meter. Voor fysieke drempelwaarden zijn minstens een grondvlaktransformatie, een afgebakende observatiezone en een procedure om de nauwkeurigheid per camera te controleren nodig. Waarschuwingen mogen daarom pas na zulke kalibratie en in combinatie met menselijke beoordeling worden ontworpen.
+
+De PoC voert geen gezichtsherkenning, heridentificatie of persoonsvolging uit. Toch kunnen camerabeelden persoonsgegevens bevatten. Bij een reële uitrol zijn een duidelijke rechtsgrond, doelbinding, dataminimalisatie, transparantie, beveiliging en een beoordeling van de gegevensbescherming nodig; grootschalige monitoring van publiek toegankelijke ruimten kan een gegevensbeschermingseffectbeoordeling vereisen \autocite{EDPBVideo2020}. Deze juridische en organisatorische uitwerking valt buiten de scope van de PoC.
+
+\section{Gebruik van generatieve artificiële intelligentie}
+
+Bij de ontwikkeling en herwerking van de Pythonbroncode is generatieve artificiële intelligentie gebruikt. Meer bepaald werd OpenAI Codex met het model \mbox{GPT-5.6-sol} van provider OpenAI ingezet om code te genereren en te refactoren, foutmeldingen te analyseren, regressietests op te stellen en documentatie bij de scripts te formuleren. Dezelfde omgeving werd beperkt als taal- en structuurhulp gebruikt bij de herwerking van het verslag.
+
+De onderzoeksvraag, de afbakening, de keuze van de dataset, het experimentele protocol en de interpretatie van de resultaten bleven de verantwoordelijkheid van de auteur. Gegenereerde code werd niet uitsluitend op basis van de modeluitvoer aanvaard, maar lokaal nagelezen en uitgevoerd. De controles omvatten syntactische validatie, geautomatiseerde regressietests, controle van het behoud van de telling in alle 360 trainingsmaps en een vergelijking tussen een ononderbroken en een hervatte trainingsrun. Meetwaarden in dit verslag zijn afkomstig uit de uitvoerbestanden van de lokale experimenten en niet uit door het taalmodel voorgestelde cijfers.

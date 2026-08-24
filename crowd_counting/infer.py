@@ -5,6 +5,7 @@ from __future__ import annotations
 import argparse
 import csv
 import json
+import platform
 import time
 from datetime import datetime, timezone
 from pathlib import Path
@@ -18,6 +19,27 @@ from PIL import Image
 from csrnet import CSRNet
 from data import IMAGENET_MEAN, IMAGENET_STD
 from experiment import select_device, synchronize
+
+
+def describe_device(device: torch.device) -> str:
+    """Return a useful hardware label for benchmark output."""
+    if device.type == "cuda":
+        return torch.cuda.get_device_name(device)
+    try:
+        cpuinfo = Path("/proc/cpuinfo").read_text(encoding="utf-8")
+        fields = {
+            key.strip(): value.strip()
+            for line in cpuinfo.splitlines()
+            if ":" in line
+            for key, value in [line.split(":", maxsplit=1)]
+        }
+        if fields.get("Model"):
+            return fields["Model"]
+        if fields.get("model name"):
+            return fields["model name"]
+    except OSError:
+        pass
+    return platform.processor().strip() or platform.machine() or "CPU"
 
 
 def main() -> None:
@@ -74,6 +96,7 @@ def main() -> None:
     np.save(output_dir / f"{stem}_density.npy", density)
     plt.imsave(output_dir / f"{stem}_density.png", density, cmap="jet")
     forward_ms = 1000 * forward_seconds / args.timed_runs
+    frames_per_second = 1000 / forward_ms
     total_ms = 1000 * (time.perf_counter() - total_started)
     result = {
         "timestamp_utc": datetime.now(timezone.utc).isoformat(),
@@ -83,12 +106,11 @@ def main() -> None:
         "image_size": [image.width, image.height],
         "estimated_count": float(density.sum()),
         "device": str(device),
-        "device_name": (
-            torch.cuda.get_device_name(device) if device.type == "cuda" else "CPU"
-        ),
+        "device_name": describe_device(device),
         "warmup_runs": args.warmup_runs,
         "timed_runs": args.timed_runs,
         "mean_forward_ms": forward_ms,
+        "model_throughput_fps": frames_per_second,
         "total_command_ms": total_ms,
     }
     (output_dir / f"{stem}_inference.json").write_text(
@@ -110,6 +132,7 @@ def main() -> None:
             "warmup_runs",
             "timed_runs",
             "mean_forward_ms",
+            "model_throughput_fps",
             "total_command_ms",
         ]
         benchmark_row = {
@@ -125,6 +148,7 @@ def main() -> None:
             "warmup_runs": result["warmup_runs"],
             "timed_runs": result["timed_runs"],
             "mean_forward_ms": result["mean_forward_ms"],
+            "model_throughput_fps": result["model_throughput_fps"],
             "total_command_ms": result["total_command_ms"],
         }
         write_header = not benchmark_path.exists()
@@ -136,7 +160,7 @@ def main() -> None:
     print(f"Geschat aantal personen: {density.sum():.2f}")
     print(
         f"Inference ({device}): gemiddeld {forward_ms:.2f} ms per beeld "
-        f"over {args.timed_runs} runs"
+        f"of {frames_per_second:.3f} FPS over {args.timed_runs} runs"
     )
 
 

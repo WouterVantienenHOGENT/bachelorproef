@@ -1,0 +1,7 @@
+# CPU-only environment used for inference on the Raspberry Pi 5 (Python 3.11).
+--extra-index-url https://download.pytorch.org/whl/cpu
+torch==2.13.0+cpu
+torchvision==0.28.0+cpu
+numpy==2.4.6
+Pillow==12.3.0
+matplotlib==3.11.1

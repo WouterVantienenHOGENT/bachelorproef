@@ -2,47 +2,12 @@
 %% Samenvatting
 %%=============================================================================
 
-% TODO: De "abstract" of samenvatting is een kernachtige (~ 1 blz. voor een
-% thesis) synthese van het document.
-%
-% Een goede abstract biedt een kernachtig antwoord op volgende vragen:
-%
-% 1. Waarover gaat de bachelorproef?
-% 2. Waarom heb je er over geschreven?
-% 3. Hoe heb je het onderzoek uitgevoerd?
-% 4. Wat waren de resultaten? Wat blijkt uit je onderzoek?
-% 5. Wat betekenen je resultaten? Wat is de relevantie voor het werkveld?
-%
-% Daarom bestaat een abstract uit volgende componenten:
-%
-% - inleiding + kaderen thema
-% - probleemstelling
-% - (centrale) onderzoeksvraag
-% - onderzoeksdoelstelling
-% - methodologie
-% - resultaten (beperk tot de belangrijkste, relevant voor de onderzoeksvraag)
-% - conclusies, aanbevelingen, beperkingen
-%
-% LET OP! Een samenvatting is GEEN voorwoord!
-
-%%---------- Nederlandse samenvatting -----------------------------------------
-%
-% TODO: Als je je bachelorproef in het Engels schrijft, moet je eerst een
-% Nederlandse samenvatting invoegen. Haal daarvoor onderstaande code uit
-% commentaar.
-% Wie zijn bachelorproef in het Nederlands schrijft, kan dit negeren, de inhoud
-% wordt niet in het document ingevoegd.
-
-\IfLanguageName{english}{%
-\selectlanguage{dutch}
-\chapter*{Samenvatting}
-\lipsum[1-4]
-\selectlanguage{english}
-}{}
-
-%%---------- Samenvatting -----------------------------------------------------
-% De samenvatting in de hoofdtaal van het document
-
 \chapter*{\IfLanguageName{dutch}{Samenvatting}{Abstract}}
 
-\lipsum[1-4]
+De Gentse Feesten brengen gedurende tien dagen grote en voortdurend veranderende bezoekersstromen naar de Gentse binnenstad. Voor organisatoren en hulpdiensten is een algemeen bezoekersaantal onvoldoende: zij hebben vooral nood aan een actueel beeld van lokale drukte. Het handmatig interpreteren van meerdere camerabeelden is echter arbeidsintensief. Deze bachelorproef onderzoekt daarom hoe computervisie, meer bepaald \emph{density estimation}, een aanvullende indicatie van lokale drukte kan leveren.
+
+Er werd een literatuurstudie uitgevoerd naar crowd management, bestaande methoden voor druktemeting en computervisie voor crowd counting. Op basis daarvan werd CSRNet gekozen als reproduceerbare eerste baseline. De Proof of Concept zet de puntannotaties van ShanghaiTech Part B om naar density maps, traint een CSRNet-model met een voorgetrainde VGG-16-frontend en evalueert de volledige validatiebeelden met MAE en RMSE. Van de officiële trainingsset worden met een vaste seed 360 beelden voor training en 40 beelden voor validatie gebruikt. De officiële testset werd niet gebruikt voor modelselectie.
+
+Na technische kalibraties werd een deterministische GPU-run van 100 epochs uitgevoerd. Het checkpoint met de laagste validatie-MAE ligt op epoch 39 en behaalt een MAE van \(6{,}556\) personen, een RMSE van \(9{,}218\) personen en een gemiddelde getekende fout van \(-0{,}304\) personen. Tegenover een gecontroleerde run van één epoch met dezelfde finale configuratie dalen MAE en RMSE respectievelijk met \(76{,}5\%\) en \(77{,}4\%\). Voor een beeld van \(1024 \times 768\) pixels duurt uitsluitend de model-inferentie op de RTX 3050 Ti gemiddeld \(107\) ms, of 9,3 model-doorlopen per seconde. Op de CPU van een Raspberry Pi 5 bedraagt dit \(10{,}95\) s per beeld, of 0,091 FPS, waarbij tijdens de belasting thermische throttling optrad. De volledige trainingsrun duurt \(58{,}19\) minuten. De resultaten tonen aan dat de technische keten reproduceerbaar werkt en dat modelselectie op volledige validatiebeelden noodzakelijk is.
+
+De PoC schat een aantal personen en een relatieve verdeling in beeldcoördinaten. Zonder camerakalibratie en projectie naar het grondvlak kan een density map niet worden vertaald naar personen per vierkante meter en kan zij geen zelfstandige veiligheidsdrempel activeren. Bovendien vereist een reële uitrol representatieve beelden van de Gentse Feesten, een evaluatie van de volledige verwerkingsketen en een privacy- en gegevensbeschermingsanalyse. De PoC is daarom bedoeld als beslissingsondersteunende basis voor verder onderzoek, niet als een onmiddellijk inzetbaar alarmsysteem.
