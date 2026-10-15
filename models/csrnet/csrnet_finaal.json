@@ -1,0 +1,9 @@
+{
+  "name": "CSRNet · finale training",
+  "architecture": "csrnet",
+  "description": "100 epochs, geselecteerd checkpoint uit epoch 39.",
+  "source": "bachproef/runs/shanghaitech_part_b_gpu_512_b4_e100_seed42/best.pt",
+  "source_sha256": "2e23bf507c8ae98d97662f8e8b2e275dc7b8caccf3f6edaad711ce6ef16c8c55",
+  "sha256": "4b06a01ced791caa19420ebd520a92c3fd673e1d8ea3ca1a78900a9c758f176a",
+  "training_dataset": "ShanghaiTech Part B"
+}

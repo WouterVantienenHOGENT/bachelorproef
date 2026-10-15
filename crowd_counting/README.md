@@ -148,6 +148,101 @@ MPLCONFIGDIR=/tmp/matplotlib-csrnet \
 
 ## Inferencebenchmark op één beeld
 
+### Webinterface
+
+Installeer in de bestaande Pythonomgeving de extra GUI-afhankelijkheid en start
+de interface vanuit de repositoryroot:
+
+```bash
+bachproef/.venv/bin/python -m pip install -r crowd_counting/requirements-web.txt
+bachproef/.venv/bin/python -m streamlit run crowd_counting/web.py --server.address 127.0.0.1
+```
+
+Installeer de modellen één keer vanuit de repositoryroot:
+
+```bash
+bachproef/.venv/bin/python crowd_counting/setup_models.py
+```
+
+Open http://127.0.0.1:8501. De keuzelijst toont herkenbare modelnamen uit de
+centrale map `models/`. De installatie bevat het officiële voorgetrainde
+**P2PNet · ShanghaiTech A** en compacte kopieën van de vier bestaande
+CSRNet-runs. De oorspronkelijke trainingsbestanden blijven behouden.
+
+Nieuwe ondersteunde gewichten kun je naar `models/csrnet/` of `models/p2pnet/`
+kopiëren. Een gelijknamig JSON-bestand bepaalt optioneel de naam en beschrijving.
+Zie [modellen beheren](../models/README.md) voor het formaat. Met **Modellen beheren**
+kun je de map wijzigen of de lijst vernieuwen. **Ander checkpoint…** blijft
+beschikbaar voor losse bestanden; het modeltype kan automatisch worden herkend.
+Alleen CSRNet en het officiële VGG16-BN-P2PNet met 2 × 2 ankers zijn ondersteund.
+Relatieve paden vertrekken vanuit `bachproef`, ongeacht de startmap.
+
+Upload een foto of kies een lokaal bestand. De app houdt één model per sessie
+in het geheugen. **Model vooraf laden** is optioneel. Een ander checkpoint,
+gewijzigde gewichten, ander modeltype of ander rekenapparaat leidt tot opnieuw
+laden. Een mislukte modelwissel laat het oude model niet geselecteerd staan.
+
+Onder **Instellingen en opslag** staan de invoerresolutie, P2PNet-scoregrens,
+opwarmruns, gemeten runs en opslagopties. De app beperkt de langste beeldzijde
+standaard tot 1024 pixels. Je kunt 1536, 2048 of de oorspronkelijke resolutie
+kiezen; grotere beelden vragen meer geheugen. De CLI behoudt standaard de
+invoerresolutie voor bestaande CSRNet-commando's. Gebruik `--max-edge` om daar
+ook een limiet toe te passen.
+
+P2PNet volgt de officiële demo: na de eventuele verkleining worden beide zijden
+naar beneden afgerond op veelvouden van 128 met LANCZOS-resampling en worden
+ImageNet-gemiddelden en standaardafwijkingen gebruikt. Voor zeer kleine beelden
+geldt een minimum van 128 pixels per zijde. Dit kan de beeldverhouding licht
+wijzigen. De telling is het aantal punten met softmax-score **groter dan 0,5**.
+De scoregrens is instelbaar, maar de vergelijking hieronder gebruikt de officiële
+waarde zonder afstemming op de handmatige telling. Ook punten buiten de beeldrand
+blijven volgens de officiële telregel meetellen; hun aantal staat apart in de JSON.
+
+CSRNet exporteert een density map als PNG en NPY. P2PNet exporteert de foto met
+hoofdposities als PNG en de punten met score als CSV. De coördinaten zijn
+teruggerekend naar de oorspronkelijke foto. Beide modellen exporteren JSON met
+het gebruikte checkpoint, modeltype, werkelijke invoerresolutie, telling en
+tijden. Elke uitvoering krijgt een eigen map onder `bachproef/predictions/web`.
+De oorspronkelijke upload en een log blijven daar ook bewaard. Downloaden voert
+geen nieuwe inferentie uit. De laatste voorspelling blijft zichtbaar na een
+modelwissel en vermeldt het model waarmee ze werkelijk is berekend.
+
+**Gemiddelde modeltijd** meet alleen de forward-pass. **Totale verwerking** omvat
+laden, beeldvoorbereiding en uitvoeropslag, maar geen uploadtijd of browserweergave.
+Bij hergebruik van een geladen model wordt de eerdere laadtijd niet opnieuw geteld.
+De eerste berekening kan extra CUDA-initialisatie bevatten. De app gebruikt
+standaard geen opwarmruns en één gemeten run; de optionele benchmark-CSV staat
+standaard uit. De JSON bewaart de volledige instellingen. De bestaande CSV blijft
+compatibel met de CSRNet-analysetools; gebruik voor vergelijking van architecturen
+of resoluties de JSON-bestanden, die ook voorbewerking en scoregrens bevatten.
+
+Het tabblad **Livestream · later** reserveert alleen ruimte voor een link.
+Streamverwerking is nog niet geïmplementeerd.
+
+### Voorgetraind P2PNet zonder bijtraining
+
+```bash
+MPLBACKEND=Agg bachproef/.venv/bin/python crowd_counting/infer.py \
+  --checkpoint models/p2pnet/p2pnet_shanghaitech_a.pth \
+  --image graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png \
+  --max-edge 1024 --threshold 0.5 \
+  --output-dir bachproef/predictions/modelvergelijking/p2pnet-1024 \
+  --warmup-runs 1 --timed-runs 3 --benchmark-csv ''
+```
+
+De adapter gebruikt de inferentiearchitectuur en ongewijzigde gewichten uit de
+[officiële P2PNet-repository](https://github.com/TencentYoutuResearch/CrowdCounting-P2PNet),
+commit `5c91a81ca062b1c7fd3db3ad1c55b1c21f0a7455`. Er worden geen aparte
+ImageNet-gewichten gedownload. De code is aangepast voor recente PyTorch-versies
+en CPU/GPU-keuze; de trainingsonderdelen zijn weggelaten. De upstreamlicentie
+staat in `vendor/p2pnet/LICENSE` en beperkt het gebruik tot academisch onderzoek.
+
+De eerste vergelijking op de Grote Markt, inclusief verschillende resoluties en
+beperkingen van de onvolledige handmatige telling, staat in
+[modelvergelijking](../bachproef/predictions/modelvergelijking/README.md).
+
+### Command line
+
 ```bash
 MPLCONFIGDIR=/tmp/matplotlib-csrnet \
   .venv/bin/python ../crowd_counting/infer.py \
@@ -163,6 +258,38 @@ en na de model-forward, zodat asynchrone CUDA-uitvoering de gemeten tijd niet
 kunstmatig verlaagt. Het script toont en bewaart naast milliseconden per beeld
 ook de modeldoorvoer in FPS. Dit is `1000 / mean_forward_ms` en omvat alleen de
 voorwaartse modelberekening.
+
+## Praktijkvoorbeeld Grote Markt
+
+Voer vanuit de repositoryroot de vier getrainde varianten uit op de foto van
+de Grote Markt in Sint-Niklaas:
+
+```bash
+MPLBACKEND=Agg bachproef/.venv/bin/python crowd_counting/example_grote_markt.py
+```
+
+Het script verwacht de oorspronkelijke foto lokaal als
+`graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png` en maakt een
+proportioneel verkleinde invoer van 1024 × 683 pixels. Het origineel wordt niet
+meegeleverd in Git. De bron is [Stad Sint-Niklaas](https://www.sint-niklaas.be/actueel/vernieuwde-grote-markt-feestelijk-ingehuldigd);
+zorg zelf voor een rechtmatig verkregen lokale kopie. De SHA-256-hash van het
+gebruikte bestand staat in de onderzoeksresultaten. Alle vier
+`best.pt`-checkpoints worden op CUDA gemeten met drie opwarmruns en twintig
+gemeten runs. De tijd omvat alleen de forward-pass. De CPU/GPU-labels in de
+tabel verwijzen naar de training, niet naar het apparaat van deze meting.
+
+De numerieke density maps, individuele metingen, checkpoint-hashes en vergelijking
+in JSON en CSV staan in `bachproef/voorbeelden/grote-markt-sint-niklaas`.
+Het script genereert ook de tabel en telling die LaTeX inleest en kopieert de
+heatmap van het checkpoint met de laagste bestaande validatie-MAE naar de
+graphics-map. De handmatige telling van 738 hoofden is onvolledig en wordt niet
+gebruikt voor de checkpointselectie.
+Nieuwe uitvoeringen vervangen de meetgegevens en passen de tabel en telling aan.
+De gegenereerde PNG-bestanden in de experimentmappen blijven lokaal en staan in
+`.gitignore`. Alleen de drie figuren die LaTeX inleest staan in de graphics-map
+in Git. Meetgegevens, numerieke density maps en puntcoördinaten blijven bewaard.
+Het kunnen downloaden van de bronfoto is geen vermelding van een vrije licentie;
+ook voor het publiek delen van de fotofiguren moeten de gebruiksrechten worden nagegaan.
 
 ## Raspberry Pi 5-benchmark
 

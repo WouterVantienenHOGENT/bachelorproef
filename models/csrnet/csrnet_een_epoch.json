@@ -1,0 +1,9 @@
+{
+  "name": "CSRNet · één epoch",
+  "architecture": "csrnet",
+  "description": "Gecontroleerde training van één epoch.",
+  "source": "bachproef/runs/shanghaitech_part_b_gpu_512_b4_e1_seed42_finalcode/best.pt",
+  "source_sha256": "51ad88d33ef55a109d6fbe18666f2b8f7694593cc4f77d82fd41d0b5303d2739",
+  "sha256": "dd6314bccdb13e51720f94a6a6ea447c0b1c234c9e059825ec97fca05fdce5ac",
+  "training_dataset": "ShanghaiTech Part B"
+}

@@ -1,0 +1,39 @@
+{
+  "architecture": "p2pnet",
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/p2pnet/p2pnet_shanghaitech_a.pth",
+  "checkpoint_epoch": null,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "estimated_count": 808,
+  "exports": [
+    "origineel_points.png",
+    "origineel_points.csv",
+    "origineel_inference.json"
+  ],
+  "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+  "image_size": [
+    2048,
+    1280
+  ],
+  "max_edge": 2048,
+  "mean_forward_ms": 385.8213250011128,
+  "model_load_ms": 428.9421069988748,
+  "model_reused": false,
+  "model_throughput_fps": 2.59187332373895,
+  "original_image_size": [
+    5120,
+    3415
+  ],
+  "points_coordinate_system": "original image pixels",
+  "points_outside_image": 3,
+  "prediction_type": "points",
+  "preprocess_ms": 421.6097160024219,
+  "preprocessing": "ImageNet normalization; LANCZOS resize down to multiples of 128 (minimum 128)",
+  "threshold": 0.5,
+  "timed_runs": 3,
+  "timestamp_utc": "2026-10-14T17:05:50.939609+00:00",
+  "total_command_ms": 4567.384057998424,
+  "visualization_caption": "Voorspelde hoofdposities",
+  "warmup_ms": 958.1874170035007,
+  "warmup_runs": 1
+}

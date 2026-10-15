@@ -1,0 +1,36 @@
+{
+  "architecture": "csrnet",
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/csrnet/csrnet_finaal.pt",
+  "checkpoint_epoch": 39,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "estimated_count": 544.1508178710938,
+  "exports": [
+    "origineel_density.png",
+    "origineel_density.npy",
+    "origineel_inference.json"
+  ],
+  "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+  "image_size": [
+    1024,
+    683
+  ],
+  "max_edge": 1024,
+  "mean_forward_ms": 95.35352266539121,
+  "model_load_ms": 1747.251011998742,
+  "model_reused": false,
+  "model_throughput_fps": 10.487289531076259,
+  "original_image_size": [
+    5120,
+    3415
+  ],
+  "prediction_type": "density",
+  "preprocess_ms": 386.6785680002067,
+  "preprocessing": "ImageNet normalization; aspect-ratio resize if limited; normalized zero padding to multiple of 8",
+  "timed_runs": 3,
+  "timestamp_utc": "2026-10-14T17:06:36.598764+00:00",
+  "total_command_ms": 3085.073502996238,
+  "visualization_caption": "Voorspelde density map",
+  "warmup_ms": 657.5398510030936,
+  "warmup_runs": 1
+}

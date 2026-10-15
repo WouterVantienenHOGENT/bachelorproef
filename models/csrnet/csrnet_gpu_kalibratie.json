@@ -1,0 +1,9 @@
+{
+  "name": "CSRNet · GPU-kalibratie",
+  "architecture": "csrnet",
+  "description": "Eerste kalibratierun op GPU.",
+  "source": "bachproef/runs/shanghaitech_part_b_gpu_calibration_512_b4/best.pt",
+  "source_sha256": "cec3d735d1001333c6c102f7e3f93b0e4e229268f34572e90ba6620c160b11ce",
+  "sha256": "268559a549eba1f5e09524f7527015e8d79c2d3dadfb924f31e0493752f59b14",
+  "training_dataset": "ShanghaiTech Part B"
+}

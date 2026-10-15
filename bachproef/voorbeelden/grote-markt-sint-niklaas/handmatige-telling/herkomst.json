@@ -1,0 +1,8 @@
+{
+  "source_export": "Grote markt.zip",
+  "zip_sha256": "d11f954efeec37af1403fb2a7f22e6877100590b3b9394307e7384e8752f8f63",
+  "html_export": "Grote markt.html",
+  "html_sha256": "b3001cfa09d975b5fa947473e489891bb346269d5a381e6e68403236f8883e7c",
+  "image_sha256": "2a9e3829ff7f5308af8de39dc3cafb502508747343838a7ca4eac6f1735451c3",
+  "verification": "HTML embedded original is byte-identical to model source; HTML and CSV each contain 738 point markers."
+}

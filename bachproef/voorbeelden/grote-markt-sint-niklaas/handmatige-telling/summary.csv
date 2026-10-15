@@ -1,0 +1,5 @@
+﻿scope,image_index,image_id,image_name,completed,image_captured_at,capture_time_source,category,category_id,count,review_count
+image,1,914980f6-7d53-4840-bb8f-4ec4bf5e6f57,origineel.png,true,2026-10-04T12:07:17.992Z,file,People,3ec870e9-2276-498c-aee0-d4bf3f21513b,738,0
+image,1,914980f6-7d53-4840-bb8f-4ec4bf5e6f57,origineel.png,true,2026-10-04T12:07:17.992Z,file,Total,,738,0
+project,,,ALL,,,,People,3ec870e9-2276-498c-aee0-d4bf3f21513b,738,0
+project,,,ALL,,,,Total,,738,0

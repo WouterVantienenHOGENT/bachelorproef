@@ -1,0 +1,5 @@
+label,run,checkpoint_epoch,validation_mae,estimated_count,mean_forward_ms
+CPU-kalibratie,shanghaitech_part_b_cpu_first,1,76.49842834472656,295.7178955078125,96.42918005001775
+GPU-kalibratie,shanghaitech_part_b_gpu_calibration_512_b4,1,30.642126083374023,353.00677490234375,96.65729420003117
+"Gecontroleerde run, 1 epoch",shanghaitech_part_b_gpu_512_b4_e1_seed42_finalcode,1,27.946216535568237,255.81007385253906,96.92864320004446
+"Finale run, 100 epochs",shanghaitech_part_b_gpu_512_b4_e100_seed42,39,6.555746841430664,544.1508178710938,97.10117519998676

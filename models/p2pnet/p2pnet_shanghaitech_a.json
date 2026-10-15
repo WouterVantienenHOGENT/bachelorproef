@@ -1,0 +1,9 @@
+{
+  "name": "P2PNet · ShanghaiTech A",
+  "architecture": "p2pnet",
+  "description": "Officieel voorgetraind model. Telt hoofdposities; geen lokale training.",
+  "source": "https://raw.githubusercontent.com/TencentYoutuResearch/CrowdCounting-P2PNet/5c91a81ca062b1c7fd3db3ad1c55b1c21f0a7455/weights/SHTechA.pth",
+  "source_commit": "5c91a81ca062b1c7fd3db3ad1c55b1c21f0a7455",
+  "sha256": "506047732b128ff09efef18e94bfacbe35fcfef300e5e9eeeece259b0488c63f",
+  "license": "Academic research only; crowd_counting/vendor/p2pnet/LICENSE"
+}

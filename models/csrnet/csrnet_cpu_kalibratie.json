@@ -1,0 +1,9 @@
+{
+  "name": "CSRNet · CPU-kalibratie",
+  "architecture": "csrnet",
+  "description": "Eerste kalibratierun op CPU.",
+  "source": "bachproef/runs/shanghaitech_part_b_cpu_first/best.pt",
+  "source_sha256": "0aa31578dfc220000a060954a1e1d6880129da83b8b9f54fe6367daf75ae76a3",
+  "sha256": "42e301a6608dfc1fa9f92ef50b64665c1b9e06607746899c9917c6c256f54a72",
+  "training_dataset": "ShanghaiTech Part B"
+}

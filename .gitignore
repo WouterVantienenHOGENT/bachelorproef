@@ -138,3 +138,18 @@ output/
 out/
 
 */runs/
+
+# Generated web inference sessions
+bachproef/predictions/web/
+
+# Locally installed model weights; names and provenance are versioned.
+/models/**/*.pt
+/models/**/*.pth
+/models/**/*.download
+
+# Local source photo and reproducible experiment visualizations.
+/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png
+/bachproef/predictions/**/*.png
+/bachproef/predictions/**/*.jpg
+/bachproef/predictions/**/*.jpeg
+/bachproef/voorbeelden/grote-markt-sint-niklaas/**/invoer_density.png

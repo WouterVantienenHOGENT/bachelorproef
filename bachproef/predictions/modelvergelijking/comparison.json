@@ -1,0 +1,55 @@
+{
+  "manual_annotation_count": 738,
+  "manual_reference_complete": false,
+  "image_sha256": "2a9e3829ff7f5308af8de39dc3cafb502508747343838a7ca4eac6f1735451c3",
+  "results": [
+    {
+      "experiment": "csrnet-1024",
+      "architecture": "csrnet",
+      "input_width": 1024,
+      "input_height": 683,
+      "estimated_count": 544.1508178710938,
+      "difference_vs_738": -193.84918212890625,
+      "mean_forward_ms": 95.35352266539121,
+      "checkpoint_sha256": "4b06a01ced791caa19420ebd520a92c3fd673e1d8ea3ca1a78900a9c758f176a",
+      "threshold": null,
+      "points_outside_image": null
+    },
+    {
+      "experiment": "p2pnet-1024",
+      "architecture": "p2pnet",
+      "input_width": 1024,
+      "input_height": 640,
+      "estimated_count": 745,
+      "difference_vs_738": 7,
+      "mean_forward_ms": 99.18036099891954,
+      "checkpoint_sha256": "506047732b128ff09efef18e94bfacbe35fcfef300e5e9eeeece259b0488c63f",
+      "threshold": 0.5,
+      "points_outside_image": 0
+    },
+    {
+      "experiment": "csrnet-2048",
+      "architecture": "csrnet",
+      "input_width": 2048,
+      "input_height": 1366,
+      "estimated_count": 879.3095092773438,
+      "difference_vs_738": 141.30950927734375,
+      "mean_forward_ms": 374.6462363342289,
+      "checkpoint_sha256": "4b06a01ced791caa19420ebd520a92c3fd673e1d8ea3ca1a78900a9c758f176a",
+      "threshold": null,
+      "points_outside_image": null
+    },
+    {
+      "experiment": "p2pnet-2048",
+      "architecture": "p2pnet",
+      "input_width": 2048,
+      "input_height": 1280,
+      "estimated_count": 808,
+      "difference_vs_738": 70,
+      "mean_forward_ms": 385.8213250011128,
+      "checkpoint_sha256": "506047732b128ff09efef18e94bfacbe35fcfef300e5e9eeeece259b0488c63f",
+      "threshold": 0.5,
+      "points_outside_image": 3
+    }
+  ]
+}

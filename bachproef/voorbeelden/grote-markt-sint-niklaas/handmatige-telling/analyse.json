@@ -1,0 +1,38 @@
+{
+  "annotation_count": 738,
+  "complete_reference": false,
+  "map_size": [
+    1024,
+    683
+  ],
+  "gaussian_sigma_pixels": 10,
+  "boundary_mode": "reflect",
+  "density_sum": 738.0000000000001,
+  "display_normalization": "divide by maximum; independent of model heatmap",
+  "models": [
+    {
+      "label": "CPU-kalibratie",
+      "estimated_count": 295.7178955078125,
+      "shortfall_vs_annotations": 442.2821044921875,
+      "shortfall_percent": 59.929824456935975
+    },
+    {
+      "label": "GPU-kalibratie",
+      "estimated_count": 353.00677490234375,
+      "shortfall_vs_annotations": 384.99322509765625,
+      "shortfall_percent": 52.16710367176914
+    },
+    {
+      "label": "Gecontroleerde run, 1 epoch",
+      "estimated_count": 255.81007385253906,
+      "shortfall_vs_annotations": 482.18992614746094,
+      "shortfall_percent": 65.33738836686463
+    },
+    {
+      "label": "Finale run, 100 epochs",
+      "estimated_count": 544.1508178710938,
+      "shortfall_vs_annotations": 193.84918212890625,
+      "shortfall_percent": 26.266826846735263
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/bachproef/runs/shanghaitech_part_b_gpu_calibration_512_b4/best.pt",
+  "checkpoint_epoch": 1,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "estimated_count": 353.00677490234375,
+  "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/invoer.png",
+  "image_size": [
+    1024,
+    683
+  ],
+  "mean_forward_ms": 96.65729420003117,
+  "model_load_ms": 1427.8933079986018,
+  "model_reused": false,
+  "model_throughput_fps": 10.345830682271234,
+  "preprocess_ms": 32.066738000139594,
+  "timed_runs": 20,
+  "timestamp_utc": "2026-10-04T12:13:13.599684+00:00",
+  "total_command_ms": 3687.9894849989796,
+  "warmup_ms": 288.1045849990187,
+  "warmup_runs": 3
+}
