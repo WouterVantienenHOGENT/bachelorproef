@@ -20,7 +20,7 @@
 % \course{Bachelor thesis}
 % \assignmenttype{Research proposal}
 
-\academicyear{2025-2026} % TODO: pas het academiejaar aan
+\academicyear{2026-2027} % TODO: pas het academiejaar aan
 
 % TODO: Werktitel
 \title{Real-time detectie van personendichtheid op de Gentse Feesten via beeldanalyse}
@@ -38,7 +38,7 @@
 % \email{yasmine.alaoui@student.hogent.be}
 
 % TODO: Geef de co-promotor op
-% \supervisor[Co-promotor]{S. Beekman (Synalco, \href{mailto:sigrid.beekman@synalco.be}{sigrid.beekman@synalco.be})}
+\supervisor[Co-promotor]{I. Theuwissen (The Safe Group, \href{mailto:ilja.theuwissen@thesafegroup.com}{ilja.theuwissen@thesafegroup.com})}
 
 % Binnen welke specialisatierichting uit 3TI situeert dit onderzoek zich?
 % Kies uit deze lijst:
@@ -57,7 +57,16 @@
 \begin{document}
 
 \begin{abstract}
-   Grootschalige openluchtevenementen zoals de Gentse Feesten brengen aanzienlijke drukte met zich mee, wat voor veel uitdagingen zorgt voor hulpdiensten. De huidige methoden voor crowd control schieten vaak te kort, omdat ze subjectief, reactief of arbeidsintensief zijn. Uit onderzoek blijkt dat er nood is aan een geautomatiseerd systeem dat real-time druktecontrole kan bieden. Daarom richt dit onderzoek zich op hoe computervisie ingezet kan worden om real-time, privacy-vriendelijk personendichtheid te voorspellen en te visualiseren. Tijdens het onderzoek gaan we een vergelijkende studie van bestaande modellen voeren. Daarna wordt er relevante data verzameld, waarop we de modellen trainen en evalueren. Op basis van de resultaten wordt een Proof of Concept ontwikkeld, gericht op de Gentse Feesten. Het verwachte resultaat is een werkend systeem dat real-time druktevisualisatie mogelijk maakt met een nauwkeurigheid van <10 MAE met >15 fps, en automatisch waarschuwingen genereert bij kritieke dichtheden, waardoor hulpdiensten proactief kunnen ingrijpen. Dit vervangt subjectieve handmatige schattingen door objectieve geautomatiseerde voorspellingen. Dit systeem zal gemakkelijk te integreren zijn met bestaande infrastructuur, heeft geen speciale hardware nodig, en voldoet aan de privacywetgeving.
+   Grootschalige openluchtevenementen brengen veel drukte met zich mee. Evenementen in steden zoals de Gentse Feesten vormen een hele uitdaging voor hulpverleners vanwege de manier waarop de Feesten worden gehouden. 
+   Meerdere verspreide toegangen en een vrije doorstroom tussen verschillende podia kunnen leiden tot tijdelijke, maar zeer gevaarlijke situaties. 
+   Bij te hoge drukte kunnen opstoppingen en verdrukking ontstaan, met mogelijke doden tot gevolg.
+   Huidige methoden van crowd monitoring schieten hier vaak tekort. Die vertrouwen vooral op ervaring van de hulpverleners uit voorgaande edities, of op mensen die camerabeelden handmatig controleren. 
+   Uit onderzoek blijkt dat er nood is aan een geautomatiseerde oplossing die in real-time druktecontrole kan bieden.
+   Dit onderzoek bekijkt de huidige stand van zaken, en gaat daarna op zoek naar een oplossing gericht op de Gentse Feesten.
+   Hierbij wordt er een Proof of Concept gemaakt. Het verwachte resultaat is een systeem dat real-time drukte kan visualiseren aan de hand van heatmaps.
+   Er wordt een MAE van minder dan 20 personen verwacht, en een verwerkingstijd van onder de 200 ms, zodat het systeem beelden kan verwerken aan 5 fps.
+   Evaluatie gebeurt aan de hand van handmatige tellingen die worden vergeleken met de uitkomst van het model.
+   Uiteindelijk wordt er onderzocht hoe het systeem nu automatisch waarschuwingen kan geven, en hoe de integratie met bestaande systemen in Gent kan gebeuren.
 \end{abstract}
 
 \tableofcontents
