@@ -1,8 +1,9 @@
 FROM debian:bookworm
 
-RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y \
     texlive-latex-base \
     texlive-latex-extra \
+    texlive-fonts-recommended \
     texlive-lang-european \
     texlive-bibtex-extra \
     biber \
