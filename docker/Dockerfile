@@ -1,6 +1,6 @@
-FROM debian:bullseye
+FROM debian:bookworm
 
-RUN apt-get update && apt-get install -y \
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive apt-get install -y --no-install-recommends \
     texlive-latex-base \
     texlive-latex-extra \
     texlive-lang-european \
@@ -8,9 +8,9 @@ RUN apt-get update && apt-get install -y \
     biber \
     git \
     texlive-xetex \
-    python3-pip \
+    python3-pygments \
+    fontconfig \
     latexmk \
-    && pip install pygments \
     && rm -rf /var/lib/apt/lists/*
 COPY fonts/ /usr/share/fonts/opentype
 RUN fc-cache -f -v
