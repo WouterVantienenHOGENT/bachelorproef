@@ -7,7 +7,7 @@ import json
 from pathlib import Path
 import tempfile
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 
 from PIL import Image
 import streamlit as st
@@ -97,15 +97,123 @@ def run_inference(checkpoint, image_bytes, image_name, output_root, device,
     }
 
 
+def render_livestream(entries):
+    from livestream import history_csv, youtube_url
+
+    def start_live():
+        try:
+            canonical = youtube_url(st.session_state.live_url)
+            selected = st.session_state.live_model
+            st.session_state.live = {
+                "running": True, "url": canonical, "checkpoint": str(selected.path),
+                "architecture": selected.architecture, "model_name": selected.name,
+                "device": st.session_state.live_device, "source": None, "resolved_at": 0,
+                "rows": [], "last": None, "next_sample": 0, "error": "",
+            }
+            st.session_state.pop("live_start_error", None)
+        except ValueError as exc:
+            st.session_state.live_start_error = str(exc)
+
+    def stop_live():
+        st.session_state.live["running"] = False
+
+    st.write("Meet doorlopend het geschatte aantal personen in een openbare YouTube-livestream.")
+    state = st.session_state.get("live")
+    running = bool(state and state["running"])
+    st.text_input("YouTube-livestream", key="live_url", placeholder="https://www.youtube.com/watch?v=…")
+    selected = st.selectbox("Livestreammodel", entries, key="live_model",
+                            index=next((i for i, entry in enumerate(entries) if entry.path.stem == "csrnet_finaal"), 0),
+                            format_func=lambda entry: entry.name)
+    st.selectbox("Rekenapparaat", ["auto", "cpu", "cuda"], key="live_device")
+    interval = st.number_input("Meetinterval in seconden", min_value=2, max_value=3600, value=5, step=1)
+    st.caption("De meting loopt zolang deze WebUI-sessie actief is. Het ophalen en verwerken van een beeld "
+               "kan langer duren dan het gekozen interval. Er worden geen videoframes opgespaard.")
+    st.caption("Iedere start begint een nieuwe historiek. Je kunt de historiek hieronder downloaden als CSV.")
+    if running:
+        st.caption("Wijzigingen aan link, model en rekenapparaat gelden bij de volgende start. Het interval wijzigt meteen.")
+    start, stop = st.columns(2)
+    start.button("Livestream starten", type="primary", disabled=running or selected is None, on_click=start_live)
+    stop.button("Stoppen", disabled=not running, on_click=stop_live)
+    if st.session_state.get("live_start_error"):
+        st.error(st.session_state.live_start_error)
+    if not entries:
+        st.info("Installeer eerst een model via crowd_counting/setup_models.py.")
+
+    @st.fragment(run_every=float(interval) if running else None)
+    def live_results():
+        from livestream import analyze_frame, capture_frame, resolve_stream
+
+        state = st.session_state.get("live")
+        if state is None:
+            return
+        if state["running"] and state.get("interval", interval) != interval:
+            state["next_sample"] = state.get("sample_started", time.monotonic()) + interval
+            state["interval"] = interval
+        if state["running"] and time.monotonic() >= state["next_sample"]:
+            started = time.monotonic()
+            state["sample_started"] = started
+            state["interval"] = interval
+            try:
+                with st.spinner("Livestream ophalen en personen tellen…"):
+                    if state["source"] is None or started - state["resolved_at"] > 1200:
+                        state["source"] = resolve_stream(state["url"])
+                        state["resolved_at"] = time.monotonic()
+                    frame = capture_frame(state["source"]["url"])
+                    timestamp = datetime.now(timezone.utc).isoformat()
+                    loaded, _ = get_model(Path(state["checkpoint"]), state["device"], state["architecture"])
+                    measurement = analyze_frame(frame, loaded)
+                    state["rows"].append({
+                        "timestamp_utc": timestamp, "estimated_count": measurement["count"],
+                        "processing_ms": 1000 * (time.monotonic() - started),
+                    })
+                    state["last"] = measurement
+                    # Do not run extra predictions on widget reruns or catch up a backlog.
+                    state["next_sample"] = max(started + interval, time.monotonic() + 0.1)
+            except Exception as exc:
+                state["running"] = False
+                state["error"] = str(exc)
+                st.rerun()
+        if state["source"]:
+            st.caption(f"{state['source']['title']} · {state['model_name']} · "
+                       + ("Meting actief" if state["running"] else "Meting gestopt"))
+        if state["error"]:
+            st.error(state["error"])
+            st.caption("De meting is gestopt. Je kunt opnieuw starten; dit begint een nieuwe historiek.")
+        last = state["last"]
+        if last is None:
+            return
+        rows = state["rows"]
+        count, peak, duration = st.columns(3)
+        count.metric("Geschat aantal personen", f"{last['count']:.0f}")
+        peak.metric("Piek in deze sessie", f"{max(row['estimated_count'] for row in rows):.0f}")
+        duration.metric("Laatste verwerking", f"{rows[-1]['processing_ms'] / 1000:.2f} s")
+        st.caption(f"Laatste beeld opgehaald om {rows[-1]['timestamp_utc']} · {len(rows)} metingen · "
+                   "Dit is een telling van personen in beeld, geen aantal unieke bezoekers.")
+        frame, heatmap = st.columns(2)
+        frame.image(last["frame"], caption="Laatst geanalyseerde beeld", width="stretch")
+        heatmap.image(last["heatmap"], caption="Drukteheatmap", width="stretch")
+        st.caption("De heatmap toont de relatieve spreiding binnen dit beeld. De kleurschaal wordt per beeld "
+                   "bepaald en geeft geen personen per m² weer. "
+                   + ("P2PNet: afgeleid uit voorspelde hoofdposities." if last["prediction_type"] == "points"
+                      else "CSRNet: voorspelde dichtheidskaart."))
+        st.subheader("Drukte over tijd")
+        import pandas as pd
+
+        history = pd.DataFrame(rows)
+        history["Tijdstip"] = pd.to_datetime(history["timestamp_utc"], utc=True)
+        history = history.rename(columns={"estimated_count": "Geschat aantal personen"})
+        st.line_chart(history, x="Tijdstip", y="Geschat aantal personen")
+        st.download_button("Historiek downloaden als CSV", history_csv(rows),
+                           file_name="livestream_historiek.csv", mime="text/csv", on_click="ignore")
+
+    live_results()
+
+
 def main():
     st.set_page_config(page_title="Personen tellen", layout="wide")
     st.title("Personen tellen")
-    st.write("Kies een model en een afbeelding om het aantal personen te schatten.")
-    image_tab, live_tab = st.tabs(["Afbeelding", "Livestream · later"])
-    with live_tab:
-        st.info("Livebeelden analyseren wordt later toegevoegd.")
-        st.text_input("Link naar livestream", placeholder="https://…", disabled=True)
-        st.button("Livestream starten", disabled=True)
+    st.write("Schat het aantal personen in een afbeelding of YouTube-livestream.")
+    image_tab, live_tab = st.tabs(["Afbeelding", "Livestream"])
 
     with image_tab:
         controls, preview = st.columns([1, 1])
@@ -243,6 +351,9 @@ def main():
             with st.expander("Alle meetgegevens en CLI-uitvoer"):
                 st.json(result)
                 st.code(prediction["log"], language="text")
+
+    with live_tab:
+        render_livestream(entries)
 
 
 if __name__ == "__main__":

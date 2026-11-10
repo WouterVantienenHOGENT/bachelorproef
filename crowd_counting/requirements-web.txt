@@ -1,2 +1,3 @@
 # Install after the inference dependencies in requirements.txt or requirements-rpi.txt.
 streamlit>=1.49,<2
+yt-dlp[default]

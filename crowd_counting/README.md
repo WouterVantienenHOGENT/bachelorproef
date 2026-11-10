@@ -216,8 +216,47 @@ standaard uit. De JSON bewaart de volledige instellingen. De bestaande CSV blijf
 compatibel met de CSRNet-analysetools; gebruik voor vergelijking van architecturen
 of resoluties de JSON-bestanden, die ook voorbewerking en scoregrens bevatten.
 
-Het tabblad **Livestream · later** reserveert alleen ruimte voor een link.
-Streamverwerking is nog niet geïmplementeerd.
+### YouTube-livestream
+
+Het tabblad **Livestream** analyseert openbare YouTube-uitzendingen die momenteel
+live zijn. Plak een `youtube.com/watch?v=…`-, `youtube.com/live/…`- of
+`youtu.be/…`-link, kies een model en rekenapparaat en klik **Livestream starten**.
+Het meetinterval is instelbaar tussen 2 en 3600 seconden, standaard 5 seconden.
+Wijzigingen aan het interval gelden tijdens de meting. Een andere link, een ander
+model of een ander rekenapparaat geldt bij de volgende start.
+
+Installeer hiervoor `requirements-web.txt`, inclusief `yt-dlp[default]`, en zorg
+dat `ffmpeg` beschikbaar is op het systeem. Voor YouTube-extractie gebruikt
+yt-dlp een JavaScript-runtime: Deno of Node.js. De app schakelt ondersteuning
+voor beide in. Zie de [yt-dlp-installatie-instructies](https://github.com/yt-dlp/yt-dlp#installation)
+voor ondersteunde runtimeversies. In de ontwikkelomgeving zijn FFmpeg en Node.js
+al aanwezig. Bij gewijzigde YouTube-extractie kun je yt-dlp bijwerken:
+
+```bash
+bachproef/.venv/bin/python -m pip install --upgrade 'yt-dlp[default]'
+```
+
+De app toont het laatste geanalyseerde beeld, de geschatte telling, een
+heatmap, de sessiepiek en een grafiek met de telling over tijd. CSRNet gebruikt
+zijn dichtheidskaart; P2PNet gebruikt een afgevlakte kaart van de voorspelde
+hoofdposities. De heatmapkleuren zijn relatief aan het huidige beeld en drukken
+geen personen per vierkante meter uit. De analyse gebruikt maximaal 1024 pixels
+voor de langste beeldzijde en voor P2PNet de standaardscoregrens van 0,5.
+
+Per meting opent FFmpeg de stream opnieuw bij de actuele livepositie en haalt
+één beeld op. De bron wordt tot 720p aangevraagd indien beschikbaar. Hierdoor
+ontstaat geen videowachtrij. Ophalen en inferentie kunnen langer duren dan het
+gekozen interval; de grafiek gebruikt de werkelijke ophaaltijdstippen in UTC.
+De upstreamvertraging van YouTube blijft wel aanwezig. Het model blijft geladen.
+
+Er is geen achtergrondtaak: laat de WebUI-sessie open om te blijven meten.
+**Stoppen** bewaart de laatste resultaten en de historiek in de sessie. Download
+de historiek als CSV voordat je opnieuw start of de pagina herlaadt; elke start
+begint een nieuwe historiek en er is geen permanente opslag. Alleen het laatste
+beeld en de laatste heatmap blijven in het geheugen; tijdelijke inferentiebestanden
+worden na iedere meting verwijderd. Andere websites, opnames en streams die een
+login vereisen zijn in deze eerste versie niet ondersteund. Bij een fout stopt
+de meting met een melding en blijft de bestaande historiek beschikbaar.
 
 ### Voorgetraind P2PNet zonder bijtraining
 
