@@ -1,0 +1,13 @@
+{
+  "source": "origineel_points.csv",
+  "map_size": [
+    1024,
+    568
+  ],
+  "gaussian_sigma_pixels": 10,
+  "boundary_mode": "reflect",
+  "point_count": 334,
+  "points_outside_image": 0,
+  "density_sum": 334.0,
+  "display_normalization": "per-image minimum and maximum; jet colormap"
+}

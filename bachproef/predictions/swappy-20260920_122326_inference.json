@@ -1,0 +1,18 @@
+{
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/bachproef/runs/shanghaitech_part_b_gpu_512_b4_e1_seed42_finalcode/best.pt",
+  "checkpoint_epoch": 1,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "estimated_count": 137.7852020263672,
+  "image": "/home/wouter/Desktop/swappy-20260920_122326.png",
+  "image_size": [
+    1915,
+    1063
+  ],
+  "mean_forward_ms": 274.6462284998415,
+  "model_throughput_fps": 3.6410476323019196,
+  "timed_runs": 10,
+  "timestamp_utc": "2026-09-20T11:59:08.663907+00:00",
+  "total_command_ms": 5489.397137000196,
+  "warmup_runs": 3
+}

@@ -1,0 +1,36 @@
+{
+  "architecture": "csrnet",
+  "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/csrnet/csrnet_een_epoch.pt",
+  "checkpoint_epoch": 1,
+  "device": "cuda",
+  "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+  "estimated_count": 108.7548828125,
+  "exports": [
+    "origineel_density.png",
+    "origineel_density.npy",
+    "origineel_inference.json"
+  ],
+  "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/trevifontein-rome/origineel.png",
+  "image_size": [
+    1024,
+    568
+  ],
+  "max_edge": 1024,
+  "mean_forward_ms": 82.90261780002766,
+  "model_load_ms": 1091.4678930021182,
+  "model_reused": false,
+  "model_throughput_fps": 12.062345273729902,
+  "original_image_size": [
+    1915,
+    1063
+  ],
+  "prediction_type": "density",
+  "preprocess_ms": 69.12459299928742,
+  "preprocessing": "ImageNet normalization; aspect-ratio resize if limited; normalized zero padding to multiple of 8",
+  "timed_runs": 20,
+  "timestamp_utc": "2026-10-17T13:22:13.853598+00:00",
+  "total_command_ms": 3067.7312379993964,
+  "visualization_caption": "Voorspelde density map",
+  "warmup_ms": 246.93526600094629,
+  "warmup_runs": 3
+}

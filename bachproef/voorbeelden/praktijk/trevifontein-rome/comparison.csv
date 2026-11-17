@@ -1,0 +1,6 @@
+label,checkpoint_epoch,image_size,estimated_count,mean_forward_ms
+"CSRNet, CPU-kalibratie",1,"[1024, 568]",152.60934448242188,82.71407535012258
+"CSRNet, GPU-kalibratie",1,"[1024, 568]",158.12265014648438,82.85260140000901
+"CSRNet, één epoch",1,"[1024, 568]",108.7548828125,82.90261780002766
+"CSRNet, finale run",39,"[1024, 568]",150.4669189453125,83.0324128999564
+"P2PNet, ShanghaiTech A",,"[1024, 512]",334,82.21378175003338

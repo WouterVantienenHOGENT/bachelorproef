@@ -1,49 +1,131 @@
 \clearpage
-\section{Praktijkvoorbeeld: Grote Markt in Sint-Niklaas}
+\section{Praktijkvoorbeelden}
 \label{sec:voorbeeld-grote-markt}
 
-Voor deze praktijkproef werd handmatig een foto geselecteerd van een druk moment tijdens de feestelijke inhuldiging van de Grote Markt in Sint-Niklaas. Het beeld toont een grote groep bezoekers, met vooral centraal en rechts veel personen dicht bij elkaar. De oorspronkelijke foto heeft een hoge resolutie van \(5120 \times 3415\) pixels en een goede belichting. Daardoor zijn veel afzonderlijke hoofden herkenbaar, al bemoeilijken de onderlinge overlap en de boom in het midden van het beeld een volledige telling.
+De volgende praktijkproeven illustreren hoe de modellen omgaan met drukke beelden buiten ShanghaiTech. Eerst wordt een evenementfoto van de Grote Markt in Sint-Niklaas onderzocht, daarna een webcambeeld van de Trevifontein in Rome. De foto's verschillen in perspectief, belichting en beeldkwaliteit. Ze dienen als verkennende vergelijking en vormen geen representatieve testset voor de Gentse Feesten.
 
-\subsection{Handmatige telling}
+\subsection{Modellen en training}
 
-Als referentie werd eerst een handmatige telling uitgevoerd op de oorspronkelijke foto. Daarbij werden 738 hoofden aangeduid. Deze telling wordt als een onderschatting beschouwd. Twijfelgevallen zijn niet overal volledig of eenduidig gemarkeerd, bijvoorbeeld wanneer dicht opeengepakte hoofden alleen door een verschil in haarkleur van elkaar te onderscheiden zijn. Ook personen die gedeeltelijk achter de boom staan, zijn niet allemaal aangeduid. Het werkelijke aantal aanwezigen ligt naar inschatting van de auteur daarom hoger dan de ongeveer 738 getelde personen.
+De vergelijking omvat vier eigen CSRNet-varianten en één voorgetraind P2PNet-model. CSRNet voorspelt een density map waarvan de som de geschatte personentelling oplevert \autocite{Li2018}. Alle eigen varianten gebruiken een op ImageNet voorgetrainde VGG-16-frontend en zijn verder getraind op ShanghaiTech Part B \autocite{Zhang2016}. De verdeling bevat 360 trainingsbeelden en 40 validatiebeelden, met seed 42. De CPU-kalibratie gebruikt één epoch, uitsneden van \(256 \times 256\) pixels en batchgrootte één. De GPU-kalibratie, de gecontroleerde run van één epoch en de finale run gebruiken uitsneden van \(512 \times 512\) pixels en batchgrootte vier. De finale run duurt 100 epochs; het geselecteerde checkpoint uit epoch 39 heeft de laagste validatie-MAE. De kalibratieruns controleren vooral de trainingsketen en zijn geen volwaardige eindmodellen.
 
-\begin{figure}[htbp]
-    \centering
-    \includegraphics[width=\textwidth]{voorbeelden/grote-markt-sint-niklaas/handmatige-telling.png}
-    \caption[Grote Markt: handmatige telling en annotatieheatmap]{De geselecteerde evenementfoto met links de 738 handmatig aangeduide hoofden en rechts de bijbehorende heatmap. Warme kleuren duiden op een hogere concentratie van annotaties. Zones zonder markeringen zijn niet noodzakelijk leeg. Foto: Stad Sint-Niklaas \autocite{SintNiklaas2026GroteMarkt}; annotaties: eigen telling.}
-    \label{fig:grote-markt-handmatig}
-\end{figure}
+P2PNet voorspelt hoofdposities met bijbehorende scores \autocite{Song2021}. Hiervoor worden de officiële gewichten voor ShanghaiTech Part A gebruikt, zonder bijkomende training op de eigen beelden \autocite{P2PNetRepository}. Alleen punten met een score groter dan \(0{,}5\) tellen mee. Omdat ook de trainingsdata en trainingsprocedure verschillen, kan een verschil met CSRNet niet uitsluitend aan de architectuur worden toegeschreven.
 
-De export van de telling bevat de coördinaten van alle 738 markeringen. Voor de heatmap in Figuur~\ref{fig:grote-markt-handmatig} zijn deze punten naar een raster van \(1024 \times 683\) pixels geschaald en afgevlakt met een Gaussische kernel met \(\sigma=10\) pixels. De numerieke map behoudt een som van 738; voor de kleurweergave is het maximum op 1 gezet. De heatmap toont de spreiding van de aangeduide hoofden in het beeld en geeft geen fysieke dichtheid in personen per vierkante meter.
+\subsection{Beelden en voorbewerking}
+
+De foto van de Grote Markt toont de feestelijke inhuldiging van het vernieuwde plein \autocite{SintNiklaas2026GroteMarkt}. Het oorspronkelijke beeld van \(5120 \times 3415\) pixels heeft een goede belichting. Vooral centraal en rechts staan bezoekers dicht bij elkaar. Overlappende hoofden en de boom in het midden bemoeilijken de telling, ook bij deze hoge resolutie.
+
+Het tweede beeld is een schermafbeelding van de webcam bij de Trevifontein van \textcite{SkylineWebcamsTrevi}. Het beeld van \(1915 \times 1063\) pixels toont drukte langs de fontein bij daglicht. De fontein is fel verlicht, terwijl veel bezoekers links in de schaduw staan. Achteraan zijn hoofden klein en overlappen personen elkaar. Water en monumenten beslaan bovendien een groot deel van het beeld. De zichtbare logo's en reclame blijven behouden, zodat de volledige schermafbeelding wordt onderzocht. De pixelafmetingen zeggen op zichzelf niets over de oorspronkelijke videokwaliteit of compressie.
+
+Voor inferentie wordt de langste beeldzijde proportioneel verkleind tot 1024 pixels met LANCZOS-resampling, zonder uitsnede. CSRNet vult de randen vervolgens aan tot veelvouden van acht. P2PNet herschaalt beide zijden verder naar veelvouden van 128 volgens de officiële demo. De tabel vermeldt daarom per model de beeldafmetingen vóór eventuele padding. Door het verkleinen gaat detail van kleine hoofden verloren; het afzonderlijke effect daarvan wordt hier niet gemeten.
+
+\subsection{Rapportering en referentietelling}
+
+Alle modeltijden worden gemeten op dezelfde RTX 3050 Ti, na drie opwarmruns en over twintig berekeningen met CUDA-synchronisatie. Alleen de voorwaartse modelberekening telt mee. De aanduidingen CPU en GPU bij de kalibratieruns verwijzen naar de training. Per foto wordt de heatmap van het finale CSRNet-checkpoint getoond. Dit is de beste eigen variant volgens de validatie-MAE, niet noodzakelijk het nauwkeurigste model op de praktijkfoto. Voor P2PNet wordt een heatmap afgeleid door de voorspelde hoofdposities naar de verkleinde foto te schalen en af te vlakken met een Gaussische kernel met \(\sigma=10\) pixels. De som blijft gelijk aan het aantal voorspelde punten binnen het beeld, hier respectievelijk 745 en 334. Deze heatmap is een visualisatie van de punten en geen rechtstreekse density-mapuitvoer van P2PNet. De kleuren worden per heatmap geschaald en tonen relatieve concentraties in het beeld, geen personen per vierkante meter. Kleurintensiteiten zijn daardoor niet rechtstreeks tussen de modellen vergelijkbaar.
+
+Voor de Grote Markt zijn handmatig 738 hoofden aangeduid op de oorspronkelijke foto. Die telling is onvolledig, onder meer bij twijfelgevallen en achter de boom, en geldt als een onderschatting. Een voorspelling boven 738 is dus niet automatisch een overschatting. Voor Rome ontbreekt voorlopig een handmatige telling. Zonder volledige referentietellingen kan voor deze beelden geen betrouwbare foutmaat of rangschikking van de modellen worden vastgesteld.
 
 \clearpage
-\subsection{Modelvoorspelling en vergelijking}
+\subsection{Grote Markt in Sint-Niklaas}
 
-Van de vier onderzochte CSRNet-varianten komt het model uit de finale trainingsrun het dichtst bij de handmatige telling. Zelfs dit model voorspelt slechts ongeveer 544 personen. Dat is ongeveer 194 personen of \(26{,}3\%\) minder dan de 738 aangeduide hoofden. De beste modelvoorspelling ligt dus aanzienlijk onder een telling die zelf al een onderschatting is. Het checkpoint uit epoch 39 werd geselecteerd op basis van de laagste validatiefout op ShanghaiTech Part B.
-
-Voor de daadwerkelijke inferentie werd de foto proportioneel verkleind van \(5120 \times 3415\) tot \(1024 \times 683\) pixels, zonder uitsnede. Hierdoor gaat detail verloren, vooral bij kleine hoofden en dicht opeengepakte groepen. Dit kan bijdragen aan de onderschatting, maar het effect van de invoerresolutie is niet afzonderlijk gemeten.
-
-\begin{figure}[htbp]
+\begin{figure}[H]
     \centering
-    \includegraphics[width=0.49\textwidth]{voorbeelden/grote-markt-sint-niklaas/invoer.png}\hfill
-    \includegraphics[width=0.49\textwidth]{voorbeelden/grote-markt-sint-niklaas/beste-heatmap.png}
-    \caption[Grote Markt: modelinvoer en voorspelde density map]{Links: de verkleinde foto die als modelinvoer dient. Rechts: de density map van het geselecteerde CSRNet-model, met een voorspelling van ongeveer 544 personen. De kleuren zijn relatief aan deze map en kunnen niet rechtstreeks worden vergeleken met die van de handmatige heatmap. Foto: Stad Sint-Niklaas \autocite{SintNiklaas2026GroteMarkt}.}
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/grote-markt-sint-niklaas/foto.png}\\[0.3em]
+        {\small (a) Originele foto}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/grote-markt-sint-niklaas/handmatige-hoofdposities.png}\\[0.3em]
+        {\small (b) Handmatige hoofdposities}
+    \end{minipage}\par\medskip
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/grote-markt-sint-niklaas/praktijk-heatmap.png}\\[0.3em]
+        {\small (c) CSRNet-heatmap}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/grote-markt-sint-niklaas/p2pnet-heatmap.png}\\[0.3em]
+        {\small (d) Afgeleide P2PNet-heatmap}
+    \end{minipage}
+    \caption[Grote Markt: foto, annotaties en modelheatmaps]{Grote Markt met 738 handmatig aangeduide hoofden en heatmaps van de finale CSRNet-run en P2PNet. Foto: \textcite{SintNiklaas2026GroteMarkt}; annotaties: eigen telling.}
     \label{fig:grote-markt-voorspelling}
 \end{figure}
 
-\begin{table}[htbp]
+\noindent\textbf{Handmatige telling:} 738 aangeduide hoofden, onvolledig.
+
+\begin{table}[H]
     \centering
     \small
     \begin{tabular}{lrrr}
         \toprule
-        \textbf{CSRNet-variant} & \textbf{Epoch} & \textbf{Personen} & \textbf{Tijd (ms)} \\
+        \textbf{Model} & \textbf{Invoer (pixels)} & \textbf{Personen} & \textbf{Tijd (ms)} \\
         \midrule
-        \input{voorbeelden/grote-markt-sint-niklaas/tabel.tex}
+        \input{voorbeelden/praktijk/grote-markt-sint-niklaas/tabel.tex}
     \end{tabular}
-    \caption[Voorspellingen voor de Grote Markt]{Voorspellingen met dezelfde voorbewerking op de RTX 3050 Ti, telkens met het beste checkpoint volgens de validatiefout. De modeltijd is het gemiddelde van twintig berekeningen na drie opwarmruns, met CUDA-synchronisatie. Model laden, voorbewerking en uitvoeropslag zijn niet meegerekend. De onvolledige handmatige telling bedraagt 738 personen.}
+    \caption[Modelvoorspellingen voor de Grote Markt]{Voorspellingen voor de Grote Markt. De tijd is de gemiddelde modeltijd volgens het hierboven beschreven meetprotocol.}
     \label{tab:grote-markt-modellen}
 \end{table}
 
-Alle varianten onderschatten de handmatige telling. De lage validatiefout op ShanghaiTech Part B garandeert dus geen nauwkeurige telling op deze evenementfoto. Verder onderzoek moet hogere invoerresoluties en verwerking in uitsneden vergelijken op meerdere volledig geannoteerde evenementbeelden.
+De finale CSRNet-run voorspelt ongeveer 194 personen minder dan de 738 aangeduide hoofden, een verschil van \(26{,}3\%\). Alle eigen varianten liggen onder deze onvolledige telling. P2PNet komt met 745 voorspelde punten dichter bij de referentie, maar vertoont ook foutpositieve punten op dakornamenten. Een vergelijkbaar totaal bewijst dus niet dat de afzonderlijke personen correct zijn herkend.
+
+\clearpage
+\subsection{Trevifontein in Rome}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/trevifontein-rome/foto.png}\\[0.3em]
+        {\small (a) Originele foto}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \IfFileExists{../graphics/voorbeelden/trevifontein-rome/handmatige-hoofdposities.png}{%
+            \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/trevifontein-rome/handmatige-hoofdposities.png}%
+        }{%
+            \sbox0{\includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/trevifontein-rome/foto.png}}%
+            \raisebox{\depth}{\fbox{\parbox[c][\dimexpr\ht0+\dp0-2\fboxsep-2\fboxrule\relax][c]{\dimexpr\linewidth-2\fboxsep-2\fboxrule\relax}{\centering Handmatige annotaties\\nog aan te vullen}}}%
+        }\\[0.3em]
+        {\small (b) Handmatige hoofdposities}
+    \end{minipage}\par\medskip
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/trevifontein-rome/praktijk-heatmap.png}\\[0.3em]
+        {\small (c) CSRNet-heatmap}
+    \end{minipage}\hfill
+    \begin{minipage}[t]{0.485\textwidth}
+        \vspace{0pt}
+        \centering
+        \includegraphics[width=\linewidth,height=0.19\textheight,keepaspectratio]{voorbeelden/trevifontein-rome/p2pnet-heatmap.png}\\[0.3em]
+        {\small (d) Afgeleide P2PNet-heatmap}
+    \end{minipage}
+    \caption[Trevifontein: webcambeeld en modelheatmaps]{Webcambeeld met heatmaps van de finale CSRNet-run en P2PNet. Het vak voor handmatige annotaties blijft voorlopig open. Webcambeeld: \textcite{SkylineWebcamsTrevi}.}
+    \label{fig:trevi-voorspelling}
+\end{figure}
+
+\noindent\textbf{Handmatige telling:} \input{voorbeelden/trevifontein-rome/handmatige-telling.tex}
+
+\begin{table}[H]
+    \centering
+    \small
+    \begin{tabular}{lrrr}
+        \toprule
+        \textbf{Model} & \textbf{Invoer (pixels)} & \textbf{Personen} & \textbf{Tijd (ms)} \\
+        \midrule
+        \input{voorbeelden/praktijk/trevifontein-rome/tabel.tex}
+    \end{tabular}
+    \caption[Modelvoorspellingen voor de Trevifontein]{Voorspellingen voor het webcambeeld van de Trevifontein, met hetzelfde meetprotocol als voor de Grote Markt.}
+    \label{tab:trevi-modellen}
+\end{table}
+
+De finale CSRNet-run voorspelt ongeveer 150 personen, tegenover 334 voor P2PNet. De sterke verschillen tussen zonlicht en schaduw en de kleine hoofden achteraan bemoeilijken de visuele controle. Zolang een handmatige telling ontbreekt, kan uit deze uiteenlopende totalen niet worden afgeleid welk model het nauwkeurigst telt.
 \clearpage

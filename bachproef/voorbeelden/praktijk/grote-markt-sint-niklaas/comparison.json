@@ -1,0 +1,203 @@
+{
+  "source_sha256": "2a9e3829ff7f5308af8de39dc3cafb502508747343838a7ca4eac6f1735451c3",
+  "original_size": [
+    5120,
+    3415
+  ],
+  "heatmap_selection": "Final CSRNet checkpoint, selected by Part B validation MAE",
+  "results": [
+    {
+      "timestamp_utc": "2026-10-17T13:21:48.792879+00:00",
+      "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/csrnet/csrnet_cpu_kalibratie.pt",
+      "checkpoint_epoch": 1,
+      "architecture": "csrnet",
+      "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+      "image_size": [
+        1024,
+        683
+      ],
+      "original_image_size": [
+        5120,
+        3415
+      ],
+      "max_edge": 1024,
+      "preprocessing": "ImageNet normalization; aspect-ratio resize if limited; normalized zero padding to multiple of 8",
+      "estimated_count": 295.7178955078125,
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+      "warmup_runs": 3,
+      "timed_runs": 20,
+      "mean_forward_ms": 96.64252294987818,
+      "model_throughput_fps": 10.347411982597258,
+      "total_command_ms": 4825.755604000733,
+      "model_reused": false,
+      "model_load_ms": 1960.23199100091,
+      "preprocess_ms": 335.39246300279046,
+      "warmup_ms": 587.6208320005389,
+      "exports": [
+        "origineel_density.png",
+        "origineel_density.npy",
+        "origineel_inference.json"
+      ],
+      "prediction_type": "density",
+      "visualization_caption": "Voorspelde density map",
+      "label": "CSRNet, CPU-kalibratie",
+      "checkpoint_sha256": "42e301a6608dfc1fa9f92ef50b64665c1b9e06607746899c9917c6c256f54a72"
+    },
+    {
+      "timestamp_utc": "2026-10-17T13:21:52.293709+00:00",
+      "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/csrnet/csrnet_gpu_kalibratie.pt",
+      "checkpoint_epoch": 1,
+      "architecture": "csrnet",
+      "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+      "image_size": [
+        1024,
+        683
+      ],
+      "original_image_size": [
+        5120,
+        3415
+      ],
+      "max_edge": 1024,
+      "preprocessing": "ImageNet normalization; aspect-ratio resize if limited; normalized zero padding to multiple of 8",
+      "estimated_count": 353.00677490234375,
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+      "warmup_runs": 3,
+      "timed_runs": 20,
+      "mean_forward_ms": 96.92285354994965,
+      "model_throughput_fps": 10.317484095581701,
+      "total_command_ms": 3463.527352003439,
+      "model_reused": false,
+      "model_load_ms": 951.6370630008169,
+      "preprocess_ms": 282.47180600010324,
+      "warmup_ms": 288.89018499830854,
+      "exports": [
+        "origineel_density.png",
+        "origineel_density.npy",
+        "origineel_inference.json"
+      ],
+      "prediction_type": "density",
+      "visualization_caption": "Voorspelde density map",
+      "label": "CSRNet, GPU-kalibratie",
+      "checkpoint_sha256": "268559a549eba1f5e09524f7527015e8d79c2d3dadfb924f31e0493752f59b14"
+    },
+    {
+      "timestamp_utc": "2026-10-17T13:21:55.978581+00:00",
+      "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/csrnet/csrnet_een_epoch.pt",
+      "checkpoint_epoch": 1,
+      "architecture": "csrnet",
+      "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+      "image_size": [
+        1024,
+        683
+      ],
+      "original_image_size": [
+        5120,
+        3415
+      ],
+      "max_edge": 1024,
+      "preprocessing": "ImageNet normalization; aspect-ratio resize if limited; normalized zero padding to multiple of 8",
+      "estimated_count": 255.81007385253906,
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+      "warmup_runs": 3,
+      "timed_runs": 20,
+      "mean_forward_ms": 97.12281054999039,
+      "model_throughput_fps": 10.296242400082592,
+      "total_command_ms": 3646.955218002404,
+      "model_reused": false,
+      "model_load_ms": 1139.1325240001606,
+      "preprocess_ms": 274.7061340014625,
+      "warmup_ms": 288.5912109995843,
+      "exports": [
+        "origineel_density.png",
+        "origineel_density.npy",
+        "origineel_inference.json"
+      ],
+      "prediction_type": "density",
+      "visualization_caption": "Voorspelde density map",
+      "label": "CSRNet, \u00e9\u00e9n epoch",
+      "checkpoint_sha256": "dd6314bccdb13e51720f94a6a6ea447c0b1c234c9e059825ec97fca05fdce5ac"
+    },
+    {
+      "timestamp_utc": "2026-10-17T13:21:59.641964+00:00",
+      "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/csrnet/csrnet_finaal.pt",
+      "checkpoint_epoch": 39,
+      "architecture": "csrnet",
+      "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+      "image_size": [
+        1024,
+        683
+      ],
+      "original_image_size": [
+        5120,
+        3415
+      ],
+      "max_edge": 1024,
+      "preprocessing": "ImageNet normalization; aspect-ratio resize if limited; normalized zero padding to multiple of 8",
+      "estimated_count": 544.1508178710938,
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+      "warmup_runs": 3,
+      "timed_runs": 20,
+      "mean_forward_ms": 97.41837464989658,
+      "model_throughput_fps": 10.265003944007617,
+      "total_command_ms": 3600.8953230011684,
+      "model_reused": false,
+      "model_load_ms": 1069.2176320008002,
+      "preprocess_ms": 290.82381300031557,
+      "warmup_ms": 290.4296480010089,
+      "exports": [
+        "origineel_density.png",
+        "origineel_density.npy",
+        "origineel_inference.json"
+      ],
+      "prediction_type": "density",
+      "visualization_caption": "Voorspelde density map",
+      "label": "CSRNet, finale run",
+      "checkpoint_sha256": "4b06a01ced791caa19420ebd520a92c3fd673e1d8ea3ca1a78900a9c758f176a"
+    },
+    {
+      "timestamp_utc": "2026-10-17T13:22:04.156990+00:00",
+      "checkpoint": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/models/p2pnet/p2pnet_shanghaitech_a.pth",
+      "checkpoint_epoch": null,
+      "architecture": "p2pnet",
+      "image": "/home/wouter/Documents/School/HoGent/3ejaar/latex-hogent-bachproef-main/graphics/voorbeelden/grote-markt-sint-niklaas/origineel.png",
+      "image_size": [
+        1024,
+        640
+      ],
+      "original_image_size": [
+        5120,
+        3415
+      ],
+      "max_edge": 1024,
+      "preprocessing": "ImageNet normalization; LANCZOS resize down to multiples of 128 (minimum 128)",
+      "estimated_count": 745,
+      "device": "cuda",
+      "device_name": "NVIDIA GeForce RTX 3050 Ti Laptop GPU",
+      "warmup_runs": 3,
+      "timed_runs": 20,
+      "mean_forward_ms": 100.21421474993986,
+      "model_throughput_fps": 9.97862431487645,
+      "total_command_ms": 4359.857385999931,
+      "model_reused": false,
+      "model_load_ms": 144.61260099778883,
+      "preprocess_ms": 336.2166420010908,
+      "warmup_ms": 402.5154000009934,
+      "exports": [
+        "origineel_points.png",
+        "origineel_points.csv",
+        "origineel_inference.json"
+      ],
+      "prediction_type": "points",
+      "threshold": 0.5,
+      "points_coordinate_system": "original image pixels",
+      "points_outside_image": 0,
+      "visualization_caption": "Voorspelde hoofdposities",
+      "label": "P2PNet, ShanghaiTech A",
+      "checkpoint_sha256": "506047732b128ff09efef18e94bfacbe35fcfef300e5e9eeeece259b0488c63f"
+    }
+  ]
+}
